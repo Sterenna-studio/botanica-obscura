@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Botanica Obscura — Présentation</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@300;400;700&display=swap');
+
+      :root {
+        --green-dark: #1a2e1a;
+        --green-mid: #2d5a27;
+        --green-light: #4a9e3f;
+        --gold: #c9a84c;
+        --gold-light: #f0d080;
+        --cream: #f5f0e8;
+        --text-dark: #1a1a1a;
+      }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      body {
+        background-color: var(--green-dark);
+        color: var(--cream);
+        font-family: 'Lato', sans-serif;
+        overflow-x: hidden;
+      }
+
+      /* HERO */
+      .hero {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 2rem;
+        background:
+          radial-gradient(ellipse at 20% 50%, rgba(74,158,63,0.15) 0%, transparent 60%),
+          radial-gradient(ellipse at 80% 50%, rgba(45,90,39,0.2) 0%, transparent 60%),
+          linear-gradient(180deg, #0d1a0d 0%, #1a2e1a 50%, #0d1a0d 100%);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .hero::before {
+        content: '🌿🍃🌱🌿🍃🌱🌿🍃🌱🌿🍃🌱🌿🍃';
+        position: absolute;
+        top: 1rem;
+        left: 0;
+        width: 100%;
+        font-size: 1.5rem;
+        opacity: 0.08;
+        letter-spacing: 1.5rem;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+
+      .hero::after {
+        content: '🌿🍃🌱🌿🍃🌱🌿🍃🌱🌿🍃🌱🌿🍃';
+        position: absolute;
+        bottom: 1rem;
+        left: 0;
+        width: 100%;
+        font-size: 1.5rem;
+        opacity: 0.08;
+        letter-spacing: 1.5rem;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+
+      .hero-emblem {
+        font-size: 5rem;
+        margin-bottom: 1.5rem;
+        filter: drop-shadow(0 0 30px rgba(74,158,63,0.6));
+        animation: float 4s ease-in-out infinite;
+      }
+
+      @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-12px); }
+      }
+
+      .hero h1 {
+        font-family: 'Cinzel', serif;
+        font-size: clamp(2.5rem, 6vw, 5rem);
+        color: var(--gold-light);
+        text-shadow: 0 0 40px rgba(201,168,76,0.5), 0 2px 4px rgba(0,0,0,0.8);
+        letter-spacing: 0.05em;
+        margin-bottom: 0.5rem;
+      }
+
+      .hero .tagline {
+        font-size: clamp(0.9rem, 2vw, 1.2rem);
+        color: var(--green-light);
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        margin-bottom: 2rem;
+        font-weight: 300;
+      }
+
+      .hero .description {
+        max-width: 600px;
+        font-size: 1.1rem;
+        line-height: 1.8;
+        color: #c8d8c0;
+        margin-bottom: 3rem;
+      }
+
+      .btn-primary {
+        display: inline-block;
+        padding: 1rem 2.5rem;
+        background: linear-gradient(135deg, var(--green-mid), var(--green-light));
+        color: var(--cream);
+        text-decoration: none;
+        font-family: 'Cinzel', serif;
+        font-size: 1.1rem;
+        border-radius: 4px;
+        border: 1px solid var(--green-light);
+        box-shadow: 0 4px 20px rgba(74,158,63,0.4);
+        transition: all 0.3s ease;
+        letter-spacing: 0.05em;
+      }
+
+      .btn-primary:hover {
+        background: linear-gradient(135deg, var(--green-light), #5dbf50);
+        box-shadow: 0 6px 30px rgba(74,158,63,0.7);
+        transform: translateY(-2px);
+      }
+
+      /* FEATURES */
+      .features {
+        padding: 5rem 2rem;
+        background: linear-gradient(180deg, #0d1a0d, #111e11);
+        text-align: center;
+      }
+
+      .features h2 {
+        font-family: 'Cinzel', serif;
+        font-size: 2rem;
+        color: var(--gold);
+        margin-bottom: 3rem;
+        position: relative;
+        display: inline-block;
+      }
+
+      .features h2::after {
+        content: '';
+        display: block;
+        width: 60%;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--gold), transparent);
+        margin: 0.5rem auto 0;
+      }
+
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 2rem;
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+
+      .feature-card {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(74,158,63,0.2);
+        border-radius: 8px;
+        padding: 2rem 1.5rem;
+        transition: all 0.3s ease;
+      }
+
+      .feature-card:hover {
+        border-color: var(--green-light);
+        background: rgba(74,158,63,0.07);
+        transform: translateY(-4px);
+      }
+
+      .feature-card .icon { font-size: 2.5rem; margin-bottom: 1rem; }
+
+      .feature-card h3 {
+        font-family: 'Cinzel', serif;
+        font-size: 1rem;
+        color: var(--gold-light);
+        margin-bottom: 0.75rem;
+        letter-spacing: 0.05em;
+      }
+
+      .feature-card p {
+        font-size: 0.9rem;
+        line-height: 1.7;
+        color: #9ab89a;
+      }
+
+      /* HOW TO PLAY */
+      .howto {
+        padding: 5rem 2rem;
+        background: #0d1a0d;
+        text-align: center;
+      }
+
+      .howto h2 {
+        font-family: 'Cinzel', serif;
+        font-size: 2rem;
+        color: var(--gold);
+        margin-bottom: 3rem;
+        position: relative;
+        display: inline-block;
+      }
+
+      .howto h2::after {
+        content: '';
+        display: block;
+        width: 60%;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--gold), transparent);
+        margin: 0.5rem auto 0;
+      }
+
+      .steps {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1.5rem;
+        max-width: 900px;
+        margin: 0 auto 3rem;
+      }
+
+      .step {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        text-align: left;
+        max-width: 380px;
+        background: rgba(255,255,255,0.02);
+        border: 1px solid rgba(201,168,76,0.15);
+        border-radius: 8px;
+        padding: 1.5rem;
+      }
+
+      .step-num {
+        font-family: 'Cinzel', serif;
+        font-size: 1.8rem;
+        color: var(--gold);
+        opacity: 0.5;
+        line-height: 1;
+        min-width: 2rem;
+      }
+
+      .step h4 {
+        font-size: 0.95rem;
+        color: var(--cream);
+        margin-bottom: 0.3rem;
+        font-weight: 700;
+      }
+
+      .step p {
+        font-size: 0.85rem;
+        color: #8aaa8a;
+        line-height: 1.6;
+      }
+
+      /* CTA FOOTER */
+      .cta-footer {
+        padding: 4rem 2rem;
+        text-align: center;
+        background: linear-gradient(180deg, #111e11, #1a2e1a);
+        border-top: 1px solid rgba(74,158,63,0.2);
+      }
+
+      .cta-footer p {
+        color: #9ab89a;
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .badge {
+        display: inline-block;
+        background: rgba(201,168,76,0.1);
+        border: 1px solid rgba(201,168,76,0.3);
+        color: var(--gold);
+        font-size: 0.75rem;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-bottom: 1.5rem;
+      }
+    </style>
+  </head>
+  <body>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-emblem">🌿</div>
+      <h1>Botanica Obscura</h1>
+      <p class="tagline">Idle Gacha Botanique • Mutations • Codex Partagé</p>
+      <p class="description">
+        Un laboratoire végétal mystérieux où vous croisez des espèces rares,
+        observez leurs mutations au fil du temps, et contribuez à un codex
+        botanique vivant partagé entre tous les joueurs.
+      </p>
+      <a href="index.html" class="btn-primary">🧪 Entrer dans le laboratoire</a>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="features">
+      <h2>Méchaniques de jeu</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="icon">🧪</div>
+          <h3>Pot de Mutation</h3>
+          <p>Combinez deux espèces végétales dans le pot et attendez 24h pour découvrir une nouvelle mutation — parfois commune, parfois rarissime.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">📖</div>
+          <h3>Codex Partagé</h3>
+          <p>Chaque espèce découverte en premier est immortalisée avec votre nom dans le codex global. Soyez le premier explorateur !</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🧑‍🌾</div>
+          <h3>Testeurs</h3>
+          <p>Faites goûter vos récoltes à vos testeurs botanistes pour obtenir des bonus de pièces et débloquer des effets spéciaux.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🎒</div>
+          <h3>Inventaire de Graines</h3>
+          <p>Constituez une collection de graines uniques issues de vos mutations. Chaque graine peut être réutilisée pour créer de nouvelles variétés.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW TO PLAY -->
+    <section class="howto">
+      <h2>Comment jouer</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">01</div>
+          <div>
+            <h4>Choisissez deux espèces mères</h4>
+            <p>Sélectionnez vos espèces A et B dans le pot de mutation parmi votre collection de graines.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <div>
+            <h4>Lancez la mutation</h4>
+            <p>Déclenchez le processus de mutation et patientez. Une barre de progression indique l'avancement.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <div>
+            <h4>Récoltez votre plante</h4>
+            <p>Une fois la mutation terminée, récoltez votre nouvelle espèce et découvrez ses propriétés uniques.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">04</div>
+          <div>
+            <h4>Enrichissez le Codex</h4>
+            <p>Si vous êtes le premier à découvrir cette espèce, elle sera inscrite dans le codex global à votre nom.</p>
+          </div>
+        </div>
+      </div>
+      <a href="index.html" class="btn-primary">🌱 Commencer l'aventure</a>
+    </section>
+
+    <!-- CTA FOOTER -->
+    <section class="cta-footer">
+      <div class="badge">Alpha — En développement actif</div>
+      <p>Botanica Obscura évolue en continu. Nouvelles espèces, mécaniques et surprises à venir.</p>
+      <a href="index.html" class="btn-primary">Accéder au jeu →</a>
+    </section>
+
+  </body>
+</html>
