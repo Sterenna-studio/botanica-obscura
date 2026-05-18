@@ -16,11 +16,13 @@
       <div class="player-stats">
         <span id="coins">🪙 100</span>
         <span id="level">Lv. 1</span>
+        <button id="notifBtn" class="notif-btn">🔔 Activer notifs</button>
       </div>
     </header>
 
     <main class="layout">
 
+      <!-- POT DE MUTATION -->
       <section class="panel">
         <h2>🧪 Pot de mutation</h2>
         <div class="pot-card">
@@ -31,23 +33,38 @@
             <select id="speciesB"></select>
           </label>
           <button id="startMutationBtn">Lancer une mutation (24h)</button>
-          <button id="harvestBtn" style="display:none; background: linear-gradient(135deg,#f0c030,#c08010); color:#111">🌺 Récolter la mutation</button>
-          <div id="mutationStatus" class="status">Choisissez deux espèces mères pour lancer une mutation.</div>
-          <div class="progress-wrap">
-            <div id="progressBar" class="progress-bar"></div>
-          </div>
+          <button id="harvestBtn" style="display:none">🌺 Récolter la mutation</button>
+          <div id="mutationStatus" class="status"></div>
+          <div class="progress-wrap"><div id="progressBar" class="progress-bar"></div></div>
           <div id="potVisual" class="pot-visual"></div>
         </div>
       </section>
 
+      <!-- PREVIEW -->
       <section class="panel">
         <h2>🔍 Prévisualisation</h2>
         <div class="plant-preview">
           <div id="plantCharacter"></div>
-          <div id="plantDescription">Sélectionnez une espèce pour afficher son personnage.</div>
+          <div id="plantDescription">Sélectionnez une espèce.</div>
         </div>
       </section>
 
+      <!-- TESTEURS -->
+      <section class="panel full-width">
+        <h2>🧑‍🌾 Testeurs</h2>
+        <p class="muted">Récoltez une plante puis faites-la goûter à vos testeurs !</p>
+        <div id="testersContainer" class="testers-grid"></div>
+      </section>
+
+      <!-- INVENTAIRE -->
+      <section class="panel full-width">
+        <h2>🎒 Inventaire des graines</h2>
+        <p class="muted">Cliquez sur "Utiliser" pour sélectionner une graine dans le pot de mutation.</p>
+        <div id="inventoryEmpty" class="muted" style="display:none">Aucune graine pour l'instant. Récoltez votre première mutation !</div>
+        <div id="inventoryGrid" class="inventory-grid"></div>
+      </section>
+
+      <!-- CODEX -->
       <section class="panel full-width">
         <h2>📖 Codex botanique global</h2>
         <p class="muted">Soyez le premier à découvrir une espèce sur le serveur !</p>
