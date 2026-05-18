@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Botanica Obscura</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <h1>Botanica Obscura</h1>
+        <p class="subtitle">Idle gardening gacha • mutations • codex partagé</p>
+      </div>
+      <div class="player-stats">
+        <span id="coins">🪙 100</span>
+        <span id="level">Lv. 1</span>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel">
+        <h2>Pot de mutation</h2>
+        <div class="pot-card">
+          <label>Espèce mère A
+            <select id="speciesA"></select>
+          </label>
+          <label>Espèce mère B
+            <select id="speciesB"></select>
+          </label>
+          <button id="startMutationBtn">Lancer une mutation (24h)</button>
+          <div id="mutationStatus" class="status">Aucune mutation en cours.</div>
+          <div class="progress-wrap">
+            <div id="progressBar" class="progress-bar"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Plante test</h2>
+        <div class="plant-preview">
+          <div id="plantCharacter"></div>
+          <div id="plantDescription">Sélectionne une espèce pour afficher son personnage.</div>
+        </div>
+      </section>
+
+      <section class="panel full-width">
+        <h2>Codex botanique global</h2>
+        <div id="codexGrid" class="codex-grid"></div>
+      </section>
+    </main>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

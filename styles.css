@@ -1,0 +1,154 @@
+:root {
+  --bg: #121a13;
+  --bg-panel: #1b261c;
+  --border: #324734;
+  --text: #e6f3e7;
+  --muted: #9ab49c;
+  --accent: #7ec850;
+  --accent-2: #5fa5f5;
+  --danger: #f07a5a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  background: radial-gradient(circle at top, #1f3321, var(--bg));
+  color: var(--text);
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 28px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.topbar h1 {
+  margin: 0;
+}
+
+.subtitle {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+.player-stats {
+  display: flex;
+  gap: 12px;
+  font-weight: 600;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  padding: 24px;
+}
+
+.panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.pot-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--muted);
+}
+
+select,
+button {
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  padding: 12px;
+  background: #101710;
+  color: var(--text);
+}
+
+button {
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--accent), #5ba53a);
+  color: #081108;
+  font-weight: 700;
+}
+
+.status {
+  color: var(--muted);
+}
+
+.progress-wrap {
+  width: 100%;
+  height: 14px;
+  background: #0d130d;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.progress-bar {
+  width: 0%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width 0.5s ease;
+}
+
+.plant-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+#plantCharacter svg {
+  width: 160px;
+  height: 180px;
+}
+
+.codex-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+.codex-card {
+  background: #101710;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.codex-card h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+
+.codex-meta {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
