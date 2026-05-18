@@ -1,154 +1,217 @@
 :root {
-  --bg: #121a13;
-  --bg-panel: #1b261c;
-  --border: #324734;
+  --bg: #0e1a0f;
+  --bg-panel: #162018;
+  --border: #2d4030;
   --text: #e6f3e7;
-  --muted: #9ab49c;
+  --muted: #8aaa8c;
   --accent: #7ec850;
   --accent-2: #5fa5f5;
+  --gold: #f0c030;
   --danger: #f07a5a;
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  margin: 0;
   font-family: Inter, system-ui, sans-serif;
-  background: radial-gradient(circle at top, #1f3321, var(--bg));
+  background: radial-gradient(ellipse at top, #1a2e1c 0%, var(--bg) 70%);
   color: var(--text);
+  min-height: 100vh;
 }
 
+/* ─── TOPBAR ─── */
 .topbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 28px;
+  padding: 18px 28px;
   border-bottom: 1px solid var(--border);
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(0,0,0,0.2);
+  backdrop-filter: blur(8px);
+  position: sticky; top: 0; z-index: 10;
 }
+.topbar h1 { font-size: 1.5rem; }
+.subtitle { color: var(--muted); font-size: 0.85rem; margin-top: 3px; }
+.player-stats { display: flex; gap: 14px; font-weight: 600; }
+.muted { color: var(--muted); font-size: 0.9rem; margin-bottom: 14px; }
 
-.topbar h1 {
-  margin: 0;
-}
-
-.subtitle {
-  margin: 4px 0 0;
-  color: var(--muted);
-}
-
-.player-stats {
-  display: flex;
-  gap: 12px;
-  font-weight: 600;
-}
-
+/* ─── LAYOUT ─── */
 .layout {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
   padding: 24px;
 }
-
 .panel {
   background: var(--bg-panel);
   border: 1px solid var(--border);
-  border-radius: 18px;
-  padding: 20px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.25);
 }
+.panel h2 { margin-bottom: 16px; font-size: 1.1rem; }
+.full-width { grid-column: 1 / -1; }
 
-.full-width {
-  grid-column: 1 / -1;
-}
-
-.pot-card {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
+/* ─── POT CARD ─── */
+.pot-card { display: flex; flex-direction: column; gap: 14px; }
 
 label {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  color: var(--muted);
+  display: flex; flex-direction: column; gap: 6px;
+  color: var(--muted); font-size: 0.9rem;
 }
 
-select,
-button {
+select {
   border-radius: 12px;
   border: 1px solid var(--border);
-  padding: 12px;
-  background: #101710;
+  padding: 10px 14px;
+  background: #0a120b;
   color: var(--text);
+  font-size: 0.95rem;
 }
 
 button {
+  border: none;
+  border-radius: 14px;
+  padding: 13px 18px;
   cursor: pointer;
-  background: linear-gradient(135deg, var(--accent), #5ba53a);
-  color: #081108;
+  font-size: 0.95rem;
   font-weight: 700;
+  background: linear-gradient(135deg, var(--accent), #5ba53a);
+  color: #071207;
+  transition: opacity 0.2s, transform 0.1s;
 }
+button:hover { opacity: 0.9; }
+button:active { transform: scale(0.97); }
+button:disabled { opacity: 0.4; cursor: default; }
 
-.status {
-  color: var(--muted);
-}
+.status { color: var(--muted); font-size: 0.9rem; min-height: 1.4em; }
 
+/* ─── PROGRESS BAR ─── */
 .progress-wrap {
-  width: 100%;
-  height: 14px;
-  background: #0d130d;
+  width: 100%; height: 12px;
+  background: #0a120b;
   border-radius: 999px;
   overflow: hidden;
   border: 1px solid var(--border);
 }
-
 .progress-bar {
-  width: 0%;
-  height: 100%;
+  width: 0%; height: 100%;
   background: linear-gradient(90deg, var(--accent), var(--accent-2));
-  transition: width 0.5s ease;
+  transition: width 1s ease;
+  border-radius: 999px;
 }
 
-.plant-preview {
+/* ─── POT VISUAL (grow animation) ─── */
+.pot-visual {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100px;
+}
+
+.pot-stage {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
+  padding: 16px 24px;
+  border-radius: 16px;
+  border: 2px solid var(--stage-color, #4a3728);
+  background: color-mix(in srgb, var(--stage-color, #4a3728) 15%, transparent);
+  transition: all 0.8s ease;
+  position: relative;
 }
 
-#plantCharacter svg {
-  width: 160px;
-  height: 180px;
+.pot-emoji {
+  font-size: 3rem;
+  animation: bounce 2s infinite ease-in-out;
 }
 
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.stage-4 .pot-emoji { animation: spin-grow 3s infinite ease-in-out; }
+@keyframes spin-grow {
+  0%, 100% { transform: scale(1) rotate(-3deg); }
+  50% { transform: scale(1.15) rotate(3deg); }
+}
+
+.pot-label {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pot-ready-glow {
+  position: absolute; inset: -4px;
+  border-radius: 18px;
+  border: 2px solid var(--gold);
+  animation: pulse-glow 1.5s infinite ease-in-out;
+  pointer-events: none;
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px var(--gold), 0 0 20px var(--gold); opacity: 0.6; }
+  50% { box-shadow: 0 0 20px var(--gold), 0 0 50px var(--gold); opacity: 1; }
+}
+
+/* ─── PLANT PREVIEW ─── */
+.plant-preview {
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+}
+#plantCharacter svg { width: 160px; height: 180px; }
+#plantDescription { color: var(--muted); font-size: 0.9rem; text-align: center; }
+
+/* ─── CODEX ─── */
 .codex-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
   gap: 14px;
 }
 
 .codex-card {
-  background: #101710;
+  background: #0d160e;
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 12px;
+  border-radius: 16px;
+  padding: 14px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
 }
-
-.codex-card h3 {
-  margin: 0 0 6px;
-  font-size: 1rem;
+.codex-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
 }
+.codex-card h3 { font-size: 0.95rem; margin: 6px 0 4px; }
+.codex-card p { font-size: 0.82rem; color: var(--muted); margin: 6px 0; }
+.codex-meta { font-size: 0.82rem; color: var(--muted); }
 
-.codex-meta {
-  color: var(--muted);
-  font-size: 0.9rem;
+.codex-sprite svg { width: 70px; height: 80px; display: block; margin: 0 auto; }
+
+.rarity-badge {
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: capitalize;
+}
+.rarity-badge.common { color: #aaa; }
+.rarity-badge.rare { color: var(--accent-2); }
+.rarity-badge.epic { color: #c080ff; }
+.rarity-badge.legendary { color: var(--gold); }
+.rarity-badge.mythic { color: #ff6090; }
+
+.codex-card.rarity-epic { border-color: #6030a0; }
+.codex-card.rarity-legendary { border-color: #c0900a; }
+.codex-card.rarity-mythic { border-color: #c02060; box-shadow: 0 0 12px rgba(255,60,120,0.3); }
+
+.first-discovery {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--gold);
+  margin-top: 6px;
 }
 
 @media (max-width: 900px) {
-  .layout {
-    grid-template-columns: 1fr;
-  }
+  .layout { grid-template-columns: 1fr; }
 }

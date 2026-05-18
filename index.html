@@ -10,8 +10,8 @@
   <body>
     <header class="topbar">
       <div>
-        <h1>Botanica Obscura</h1>
-        <p class="subtitle">Idle gardening gacha • mutations • codex partagé</p>
+        <h1>🌿 Botanica Obscura</h1>
+        <p class="subtitle">Idle gacha botanique • mutations • codex partagé</p>
       </div>
       <div class="player-stats">
         <span id="coins">🪙 100</span>
@@ -20,8 +20,9 @@
     </header>
 
     <main class="layout">
+
       <section class="panel">
-        <h2>Pot de mutation</h2>
+        <h2>🧪 Pot de mutation</h2>
         <div class="pot-card">
           <label>Espèce mère A
             <select id="speciesA"></select>
@@ -30,27 +31,30 @@
             <select id="speciesB"></select>
           </label>
           <button id="startMutationBtn">Lancer une mutation (24h)</button>
-          <div id="mutationStatus" class="status">Aucune mutation en cours.</div>
+          <button id="harvestBtn" style="display:none; background: linear-gradient(135deg,#f0c030,#c08010); color:#111">🌺 Récolter la mutation</button>
+          <div id="mutationStatus" class="status">Choisissez deux espèces mères pour lancer une mutation.</div>
           <div class="progress-wrap">
             <div id="progressBar" class="progress-bar"></div>
           </div>
+          <div id="potVisual" class="pot-visual"></div>
         </div>
       </section>
 
       <section class="panel">
-        <h2>Plante test</h2>
+        <h2>🔍 Prévisualisation</h2>
         <div class="plant-preview">
           <div id="plantCharacter"></div>
-          <div id="plantDescription">Sélectionne une espèce pour afficher son personnage.</div>
+          <div id="plantDescription">Sélectionnez une espèce pour afficher son personnage.</div>
         </div>
       </section>
 
       <section class="panel full-width">
-        <h2>Codex botanique global</h2>
+        <h2>📖 Codex botanique global</h2>
+        <p class="muted">Soyez le premier à découvrir une espèce sur le serveur !</p>
         <div id="codexGrid" class="codex-grid"></div>
       </section>
-    </main>
 
+    </main>
     <script type="module" src="app.js"></script>
   </body>
 </html>
