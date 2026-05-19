@@ -1,0 +1,178 @@
+/* ── Profil page ──────────────────────────────────────────── */
+.profil-main {
+  max-width: 860px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.back-link {
+  color: #90d060;
+  text-decoration: none;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+.back-link:hover { opacity: 1; }
+
+/* ── Carte identité */
+.profil-card {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  background: rgba(20,35,20,0.7);
+  border: 1px solid rgba(100,180,100,0.2);
+  border-radius: 16px;
+  padding: 1.5rem;
+  backdrop-filter: blur(8px);
+}
+
+.profil-avatar-wrap { position: relative; flex-shrink: 0; }
+.profil-avatar {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  border: 2px solid rgba(100,200,100,0.4);
+  object-fit: cover;
+  display: none;
+}
+.profil-avatar-placeholder {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: rgba(40,60,40,0.8);
+  border: 2px solid rgba(100,200,100,0.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem;
+}
+
+.profil-meta { flex: 1; }
+.profil-meta h2 { margin: 0 0 0.5rem; font-size: 1.4rem; color: #c8f0a0; }
+
+.profil-badges { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; }
+.badge {
+  padding: 0.25rem 0.7rem;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.badge-level  { background: rgba(80,120,60,0.5);  color: #b0e880; border: 1px solid rgba(100,180,80,0.3); }
+.badge-coins  { background: rgba(120,100,20,0.5); color: #f0d060; border: 1px solid rgba(200,160,40,0.3); }
+.badge-codex  { background: rgba(40,80,120,0.5);  color: #90c0f0; border: 1px solid rgba(80,140,200,0.3); }
+
+.profil-xp-bar {
+  height: 6px; border-radius: 3px;
+  background: rgba(255,255,255,0.08);
+  overflow: hidden; margin-bottom: 0.3rem;
+}
+.profil-xp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #5a9a30, #90d060);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+.profil-xp-label { font-size: 0.78rem; color: rgba(200,240,160,0.6); }
+.profil-joined   { font-size: 0.78rem; color: rgba(180,220,160,0.5); margin-top: 0.4rem; }
+
+/* ── Sections */
+.profil-section {
+  background: rgba(20,35,20,0.5);
+  border: 1px solid rgba(100,180,100,0.15);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+}
+.profil-section h3 {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  color: #a0d070;
+  letter-spacing: 0.03em;
+}
+
+/* ── Stats grid */
+.profil-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+}
+.stat-box {
+  background: rgba(30,50,30,0.6);
+  border: 1px solid rgba(100,180,100,0.15);
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  text-align: center;
+}
+.stat-value { font-size: 1.4rem; font-weight: 700; color: #c8f080; }
+.stat-label { font-size: 0.75rem; color: rgba(180,220,160,0.6); margin-top: 0.25rem; }
+
+/* ── Codex grid */
+.codex-progress-label {
+  font-size: 0.82rem;
+  color: rgba(180,220,160,0.6);
+  font-weight: 400;
+  margin-left: 0.5rem;
+}
+.profil-codex-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+  gap: 6px;
+}
+.profil-codex-slot {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(20,35,20,0.5);
+  overflow: hidden;
+}
+.profil-codex-slot.unknown {
+  background: rgba(30,30,30,0.4);
+  color: rgba(255,255,255,0.2);
+  font-size: 1.1rem;
+}
+.slot-tier {
+  position: absolute;
+  bottom: 2px; right: 3px;
+  font-size: 0.6rem;
+  color: rgba(255,255,255,0.3);
+}
+.slot-svg svg { width: 44px; height: 44px; }
+.slot-first {
+  position: absolute;
+  top: 1px; right: 2px;
+  font-size: 0.7rem;
+}
+.slot-mystery { font-size: 1.2rem; }
+
+/* rarity borders pour le codex */
+.profil-codex-slot.rarity-common    { border-color: rgba(160,200,100,0.35); }
+.profil-codex-slot.rarity-rare      { border-color: rgba(80,140,220,0.45); }
+.profil-codex-slot.rarity-epic      { border-color: rgba(160,80,220,0.5); }
+.profil-codex-slot.rarity-legendary { border-color: rgba(220,160,40,0.6); }
+.profil-codex-slot.rarity-mythic    { border-color: rgba(220,60,60,0.6); box-shadow: 0 0 6px rgba(220,60,60,0.25); }
+
+/* ── Table ventes */
+.profil-sales-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+.profil-sales-table th {
+  text-align: left;
+  padding: 0.4rem 0.6rem;
+  color: rgba(180,220,160,0.5);
+  font-weight: 500;
+  border-bottom: 1px solid rgba(100,180,100,0.1);
+}
+.profil-sales-table td {
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  color: #d0e8c0;
+}
+.profil-sales-table tr:last-child td { border-bottom: none; }
+.table-loading, .table-empty { color: rgba(180,220,160,0.4); font-style: italic; }
+.table-date { color: rgba(180,220,160,0.5); font-size: 0.8rem; }
+
+@media (max-width: 520px) {
+  .profil-card { flex-direction: column; align-items: center; text-align: center; }
+  .profil-badges { justify-content: center; }
+}

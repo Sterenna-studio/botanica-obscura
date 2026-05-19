@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profil — Botanica Obscura</title>
+  <link rel="stylesheet" href="styles/main.css" />
+  <link rel="stylesheet" href="styles/profil.css" />
+</head>
+<body>
+  <header class="site-header">
+    <a href="index.html" class="back-link">← Retour au jeu</a>
+    <h1>🌿 Botanica Obscura</h1>
+  </header>
+
+  <main class="profil-main">
+
+    <!-- Carte identité -->
+    <section class="profil-card" id="profil-identity">
+      <div class="profil-avatar-wrap">
+        <img id="profil-avatar" src="" alt="avatar" class="profil-avatar" />
+        <div class="profil-avatar-placeholder" id="profil-avatar-placeholder">🌱</div>
+      </div>
+      <div class="profil-meta">
+        <h2 id="profil-name">Chargement...</h2>
+        <div class="profil-badges">
+          <span class="badge badge-level" id="profil-level">Lv. 1</span>
+          <span class="badge badge-coins" id="profil-coins">🪙 0</span>
+          <span class="badge badge-codex" id="profil-codex">📖 0 / 32</span>
+        </div>
+        <div class="profil-xp-bar">
+          <div class="profil-xp-fill" id="profil-xp-fill" style="width:0%"></div>
+        </div>
+        <div class="profil-xp-label" id="profil-xp-label">0 XP</div>
+        <div class="profil-joined" id="profil-joined"></div>
+      </div>
+    </section>
+
+    <!-- Stats rapides -->
+    <section class="profil-section">
+      <h3>📊 Statistiques</h3>
+      <div class="profil-stats-grid">
+        <div class="stat-box">
+          <div class="stat-value" id="stat-mutations">—</div>
+          <div class="stat-label">Mutations totales</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="stat-sold">—</div>
+          <div class="stat-label">Plantes vendues</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="stat-earned">—</div>
+          <div class="stat-label">Coins gagnés (ventes)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="stat-first">—</div>
+          <div class="stat-label">1ères découvertes serveur</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Codex personnel -->
+    <section class="profil-section">
+      <h3>📖 Mon Codex <span id="codex-progress-label" class="codex-progress-label"></span></h3>
+      <div class="profil-codex-grid" id="profil-codex-grid"></div>
+    </section>
+
+    <!-- Historique ventes -->
+    <section class="profil-section">
+      <h3>🪙 Dernières ventes NPC</h3>
+      <table class="profil-sales-table">
+        <thead><tr><th>Espèce</th><th>Qualité</th><th>Prix</th><th>Date</th></tr></thead>
+        <tbody id="profil-sales-body"><tr><td colspan="4" class="table-loading">Chargement...</td></tr></tbody>
+      </table>
+    </section>
+
+  </main>
+
+  <script type="module" src="profil.js"></script>
+</body>
+</html>
