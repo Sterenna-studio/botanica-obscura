@@ -6,48 +6,70 @@ import { loadInventory, renderInventory } from './lib/inventory.js';
 import { ensureTesters, renderTesters } from './lib/testers.js';
 import { requestNotifPermission, schedulePotNotification, cancelPotNotification, restorePotNotification } from './lib/notifications.js';
 import { renderMutationTree } from './lib/mutationTree.js';
+import { onAuthReady, getBotanicaUserId, isLoggedIn } from './lib/auth.js';
+import { initAuthModal } from './lib/authModal.js';
 
 export const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-let userId = localStorage.getItem('botanica_user_id');
-if (!userId) { userId = crypto.randomUUID(); localStorage.setItem('botanica_user_id', userId); }
-export { userId };
+// userId dynamique : auth.uid() si connecté, sinon anon local
+export function getUserId() { return getBotanicaUserId(); }
 
-const speciesASelect  = document.getElementById('speciesA');
-const speciesBSelect  = document.getElementById('speciesB');
+const speciesASelect   = document.getElementById('speciesA');
+const speciesBSelect   = document.getElementById('speciesB');
 const startMutationBtn = document.getElementById('startMutationBtn');
-const harvestBtn      = document.getElementById('harvestBtn');
-const mutationStatus  = document.getElementById('mutationStatus');
-const progressBar     = document.getElementById('progressBar');
-const codexGrid       = document.getElementById('codexGrid');
-const plantCharacter  = document.getElementById('plantCharacter');
+const harvestBtn       = document.getElementById('harvestBtn');
+const mutationStatus   = document.getElementById('mutationStatus');
+const progressBar      = document.getElementById('progressBar');
+const codexGrid        = document.getElementById('codexGrid');
+const plantCharacter   = document.getElementById('plantCharacter');
 const plantDescription = document.getElementById('plantDescription');
-const potVisual       = document.getElementById('potVisual');
-const notifBtn        = document.getElementById('notifBtn');
+const potVisual        = document.getElementById('potVisual');
+const notifBtn         = document.getElementById('notifBtn');
 
 let speciesList = [];
+let playerCodexIds = new Set(); // IDs espèces débloquées par CE joueur
 let activePot = null;
 let progressInterval = null;
 let testers = [];
 let lastHarvestedSpecies = null;
 
+// ── Chargement des espèces depuis la vue matérialisée ────────────────────
 async function loadSpecies() {
-  const { data, error } = await supabase
-    .from('species').select('*')
-    .order('tier', { ascending: true }).order('id', { ascending: true });
-  speciesList = (!error && data?.length) ? data : getFallbackSpeciesTree();
+  // Lecture depuis codex_botanique_global (snapshot cron, léger)
+  const { data: globalData, error: globalErr } = await supabase
+    .from('codex_botanique_global')
+    .select('*')
+    .order('tier', { ascending: true })
+    .order('id', { ascending: true });
+
+  // Lecture du codex personnel du joueur (own ids uniquement)
+  const userId = getUserId();
+  const { data: codexData } = await supabase
+    .from('player_codex')
+    .select('species_id, was_first_server')
+    .eq('user_id', userId);
+
+  playerCodexIds = new Set((codexData ?? []).map(r => r.species_id));
+
+  speciesList = (!globalErr && globalData?.length)
+    ? globalData
+    : getFallbackSpeciesTree();
+
   populateSpeciesSelects();
   renderCodex();
-  renderMutationTree(speciesList, renderPreview);
-  renderPreview(speciesList[0]);
+  renderMutationTree(speciesList, playerCodexIds, renderPreview);
+  renderPreview(speciesList.find(s => playerCodexIds.has(s.id)) ?? speciesList[0]);
 }
 
+// ── Sélecteurs espèces (uniquement débloquées) ────────────────────────────
 function populateSpeciesSelects() {
-  const options = speciesList.map(s =>
+  const unlocked = speciesList.filter(s => playerCodexIds.has(s.id));
+  const options  = unlocked.map(s =>
     `<option value="${s.id}">${s.name} — T${s.tier} (${s.rarity})</option>`
   ).join('');
-  speciesASelect.innerHTML = options;
-  speciesBSelect.innerHTML = options;
+  const placeholder = '<option value="" disabled selected>— Aucune espèce débloquée —</option>';
+  speciesASelect.innerHTML = unlocked.length ? options : placeholder;
+  speciesBSelect.innerHTML = unlocked.length ? options : placeholder;
   speciesASelect.addEventListener('change', () => renderPreview(getSelected(speciesASelect)));
 }
 
@@ -61,17 +83,47 @@ function renderPreview(species) {
   plantDescription.textContent = species.description || 'Aucune description.';
 }
 
+// ── Rendu codex avec 3 états ─────────────────────────────────────────────
 function renderCodex() {
-  codexGrid.innerHTML = speciesList.map(s => `
-    <article class="codex-card rarity-${s.rarity}" data-id="${s.id}">
-      <div class="codex-sprite">${createPlantCharacterSvg(s)}</div>
-      <h3>${s.name}</h3>
-      <div class="codex-meta">Tier ${s.tier} • <span class="rarity-badge ${s.rarity}">${s.rarity}</span></div>
-      <p>${s.description || ''}</p>
-      ${s.discovered_by ? `<div class="first-discovery">🏅 1ère découverte serveur</div>` : ''}
-    </article>
-  `).join('');
-  document.querySelectorAll('.codex-card').forEach(card => {
+  codexGrid.innerHTML = speciesList.map(s => {
+    const state = playerCodexIds.has(s.id)
+      ? 'unlocked'
+      : s.discovered_by ? 'server-known' : 'unknown';
+
+    if (state === 'unlocked') {
+      return `
+        <article class="codex-card rarity-${s.rarity} state-unlocked" data-id="${s.id}">
+          <div class="codex-sprite">${createPlantCharacterSvg(s)}</div>
+          <h3>${s.name}</h3>
+          <div class="codex-meta">Tier ${s.tier} • <span class="rarity-badge ${s.rarity}">${s.rarity}</span></div>
+          <p>${s.description || ''}</p>
+          ${s.was_first_server ? '<div class="first-discovery">🏅 1ère découverte serveur</div>' : ''}
+        </article>`;
+    }
+
+    if (state === 'server-known') {
+      return `
+        <article class="codex-card state-server-known" data-id="${s.id}" title="Découverte par ${s.discoverer_name ?? 'un autre joueur'}">
+          <div class="codex-sprite codex-silhouette">${createPlantCharacterSvg(s)}</div>
+          <h3 class="codex-unknown-name">???</h3>
+          <div class="codex-meta">Tier ${s.tier} • <span class="rarity-badge ${s.rarity}">${s.rarity}</span></div>
+          <div class="codex-server-badge">
+            ${s.discoverer_avatar ? `<img src="${s.discoverer_avatar}" class="codex-discoverer-avatar" alt="" />` : '🌐'}
+            <span>Découverte par <strong>${s.discoverer_name ?? '???'}</strong></span>
+          </div>
+        </article>`;
+    }
+
+    // unknown
+    return `
+      <article class="codex-card state-unknown" data-id="${s.id}">
+        <div class="codex-sprite codex-mystery">?</div>
+        <h3 class="codex-unknown-name">Espèce inconnue</h3>
+        <div class="codex-meta">Tier ${s.tier}</div>
+      </article>`;
+  }).join('');
+
+  document.querySelectorAll('.codex-card.state-unlocked').forEach(card => {
     card.addEventListener('click', () => {
       renderPreview(speciesList.find(s => String(s.id) === card.dataset.id));
     });
@@ -79,24 +131,23 @@ function renderCodex() {
 }
 
 async function refreshInventory() {
-  const seeds = await loadInventory(userId);
+  const seeds = await loadInventory(getUserId());
   renderInventory(seeds, (speciesId) => {
     const optA = speciesASelect.querySelector(`option[value="${speciesId}"]`);
-    const optB = speciesBSelect.querySelector(`option[value="${speciesId}"]`);
     if (optA) { speciesASelect.value = speciesId; renderPreview(getSelected(speciesASelect)); }
-    else if (optB) { speciesBSelect.value = speciesId; }
+    else { speciesBSelect.value = speciesId; }
     document.querySelector('.panel')?.scrollIntoView({ behavior: 'smooth' });
   });
 }
 
 async function refreshTesters() {
-  testers = await ensureTesters(userId);
+  testers = await ensureTesters(getUserId());
   renderTesters(testers, lastHarvestedSpecies);
 }
 
 export function updateGrowAnimation(pot) {
   if (!pot) { resetPotVisual(); return; }
-  const now = Date.now();
+  const now   = Date.now();
   const start = new Date(pot.started_at).getTime();
   const end   = new Date(pot.ready_at).getTime();
   const pct   = Math.min(((now - start) / (end - start)) * 100, 100);
@@ -122,9 +173,9 @@ export function updateGrowAnimation(pot) {
 }
 
 function renderPotStage(stage, ready) {
-  const emojis  = ['🪨','🌱','🌿','🌳','🌺'];
-  const labels  = ['Sol préparé','Germination','Pousse','Croissance','Floraison'];
-  const colors  = ['#4a3728','#5a7a3a','#6a9a4a','#4a8a3a','#d870c0'];
+  const emojis = ['🪨','🌱','🌿','🌳','🌺'];
+  const labels = ['Sol préparé','Germination','Pousse','Croissance','Floraison'];
+  const colors = ['#4a3728','#5a7a3a','#6a9a4a','#4a8a3a','#d870c0'];
   potVisual.innerHTML = `
     <div class="pot-stage stage-${stage}" style="--stage-color:${colors[stage]}">
       <div class="pot-emoji">${emojis[stage]}</div>
@@ -142,13 +193,18 @@ function resetPotVisual() {
 }
 
 startMutationBtn.addEventListener('click', async () => {
+  if (!isLoggedIn()) {
+    mutationStatus.textContent = '🔒 Connectez-vous pour lancer une mutation.';
+    import('./lib/auth.js').then(({ openAuthModal }) => openAuthModal('login'));
+    return;
+  }
   const aId = Number(speciesASelect.value);
   const bId = Number(speciesBSelect.value);
   if (!aId || !bId) return;
   mutationStatus.textContent = '⏳ Lancement...';
   startMutationBtn.disabled = true;
 
-  const result = await startMutationPot(userId, aId, bId);
+  const result = await startMutationPot(getUserId(), aId, bId);
   startMutationBtn.disabled = false;
   if (result.error) { mutationStatus.textContent = `❌ ${result.error}`; return; }
 
@@ -162,7 +218,7 @@ harvestBtn.addEventListener('click', async () => {
   harvestBtn.disabled = true;
   mutationStatus.textContent = '🎲 Résolution du gacha...';
 
-  const result = await harvestMutation(activePot.id, userId);
+  const result = await harvestMutation(activePot.id, getUserId());
   if (result.error) { mutationStatus.textContent = `❌ ${result.error}`; harvestBtn.disabled = false; return; }
 
   lastHarvestedSpecies = result.result_species;
@@ -193,14 +249,19 @@ if (notifBtn) {
   });
 }
 
+// ── Init : attend la session auth avant de tout charger ──────────────────
 async function init() {
+  initAuthModal();
   restorePotNotification();
-  await loadSpecies();
-  resetPotVisual();
-  await Promise.all([refreshInventory(), refreshTesters()]);
 
-  const pot = await loadActivePot(userId);
-  if (pot) { activePot = pot; tickProgress(); }
+  onAuthReady(async () => {
+    await loadSpecies();
+    resetPotVisual();
+    await Promise.all([refreshInventory(), refreshTesters()]);
+
+    const pot = await loadActivePot(getUserId());
+    if (pot) { activePot = pot; tickProgress(); }
+  });
 }
 
 init();

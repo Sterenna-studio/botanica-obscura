@@ -17,6 +17,13 @@
         <span id="coins">🪙 100</span>
         <span id="level">Lv. 1</span>
         <button id="notifBtn" class="notif-btn">🔔 Activer notifs</button>
+
+        <!-- Zone auth -->
+        <div id="authZone" class="auth-zone">
+          <button id="loginBtn" class="auth-btn login-btn">🔑 Connexion</button>
+          <div id="userBadge" class="user-badge" style="display:none"></div>
+          <button id="logoutBtn" class="auth-btn logout-btn" style="display:none">Déconnexion</button>
+        </div>
       </div>
     </header>
 
@@ -61,7 +68,7 @@
       <section class="panel full-width">
         <h2>🎒 Inventaire des graines</h2>
         <p class="muted">Cliquez sur "Utiliser" pour sélectionner une graine dans le pot de mutation.</p>
-        <div id="inventoryEmpty" class="muted" style="display:none">Aucune graine pour l'instant. Récoltez votre première mutation !</div>
+        <div id="inventoryEmpty" class="muted" style="display:none">Aucune graine pour l'instant.</div>
         <div id="inventoryGrid" class="inventory-grid"></div>
       </section>
 

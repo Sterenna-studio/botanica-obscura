@@ -12,17 +12,54 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: Inter, system-ui, sans-serif; background: radial-gradient(ellipse at top, #1a2e1c 0%, var(--bg) 70%); color: var(--text); min-height: 100vh; }
+
+/* ── Topbar ─────────────────────────────────────────────────────────── */
 .topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 28px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.25); backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 10; gap: 12px; flex-wrap: wrap; }
 .topbar h1 { font-size: 1.4rem; }
 .subtitle { color: var(--muted); font-size: 0.82rem; margin-top: 3px; }
-.player-stats { display: flex; gap: 12px; align-items: center; font-weight: 600; }
+.player-stats { display: flex; gap: 12px; align-items: center; font-weight: 600; flex-wrap: wrap; }
 .notif-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); font-size: 0.82rem; padding: 6px 12px; border-radius: 10px; cursor: pointer; }
 .notif-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── Auth zone ──────────────────────────────────────────────────────── */
+.auth-zone { display: flex; align-items: center; gap: 8px; }
+.auth-btn { border-radius: 12px; padding: 7px 14px; font-size: 0.85rem; font-weight: 700; cursor: pointer; border: none; transition: opacity 0.2s; }
+.login-btn  { background: linear-gradient(135deg, var(--accent), #5ba53a); color: #071207; }
+.logout-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+.logout-btn:hover { border-color: var(--danger); color: var(--danger); }
+.user-badge { display: flex; align-items: center; gap: 8px; background: rgba(126,200,80,0.1); border: 1px solid rgba(126,200,80,0.3); border-radius: 12px; padding: 5px 12px; }
+.auth-avatar { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; }
+.auth-avatar-placeholder { font-size: 1.2rem; }
+.auth-username { font-size: 0.88rem; font-weight: 700; color: var(--accent); }
+
+/* ── Modal auth ─────────────────────────────────────────────────────── */
+.auth-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 100; align-items: center; justify-content: center; }
+.auth-modal-overlay.open { display: flex; }
+.auth-modal-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 22px; padding: 32px 28px; width: 100%; max-width: 400px; position: relative; box-shadow: 0 24px 60px rgba(0,0,0,0.5); }
+.auth-modal-close { position: absolute; top: 14px; right: 16px; background: none; border: none; color: var(--muted); font-size: 1.4rem; cursor: pointer; padding: 4px 8px; border-radius: 8px; }
+.auth-modal-close:hover { color: var(--text); }
+.auth-modal-card h2 { font-size: 1.2rem; margin-bottom: 20px; }
+.auth-tabs { display: flex; gap: 6px; margin-bottom: 20px; }
+.auth-tab { flex: 1; padding: 8px; border-radius: 10px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.auth-tab.active { background: rgba(126,200,80,0.15); border-color: var(--accent); color: var(--accent); }
+.auth-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; color: var(--muted); font-size: 0.88rem; }
+.auth-field input { border-radius: 12px; border: 1px solid var(--border); padding: 10px 12px; background: #0a120b; color: var(--text); font-size: 0.93rem; outline: none; transition: border-color 0.2s; }
+.auth-field input:focus { border-color: var(--accent); }
+.auth-error { font-size: 0.83rem; color: var(--danger); min-height: 1.2em; margin-bottom: 10px; }
+.auth-submit-btn { width: 100%; padding: 12px; border-radius: 14px; border: none; background: linear-gradient(135deg, var(--accent), #5ba53a); color: #071207; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: opacity 0.2s; }
+.auth-submit-btn:hover { opacity: 0.9; }
+.auth-submit-btn:disabled { opacity: 0.45; cursor: default; }
+.auth-footer-note { margin-top: 16px; font-size: 0.83rem; color: var(--muted); text-align: center; }
+.auth-link { background: none; border: none; color: var(--accent); cursor: pointer; font-size: inherit; padding: 0; text-decoration: underline; }
+
+/* ── Layout ─────────────────────────────────────────────────────────── */
 .muted { color: var(--muted); font-size: 0.88rem; margin-bottom: 12px; }
 .layout { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; padding: 24px; }
 .panel { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 20px; padding: 22px; box-shadow: 0 16px 40px rgba(0,0,0,0.25); }
 .panel h2 { margin-bottom: 10px; font-size: 1.05rem; }
 .full-width { grid-column: 1 / -1; }
+
+/* ── Pot ────────────────────────────────────────────────────────────── */
 .pot-card { display: flex; flex-direction: column; gap: 13px; }
 label { display: flex; flex-direction: column; gap: 5px; color: var(--muted); font-size: 0.88rem; }
 select { border-radius: 12px; border: 1px solid var(--border); padding: 10px 12px; background: #0a120b; color: var(--text); font-size: 0.93rem; }
@@ -41,22 +78,60 @@ button:hover { opacity: 0.9; } button:active { transform: scale(0.97); } button:
 .pot-label { font-size: 0.8rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
 .pot-ready-glow { position: absolute; inset: -4px; border-radius: 18px; border: 2px solid var(--gold); animation: pulse-glow 1.4s infinite ease-in-out; pointer-events: none; }
 @keyframes pulse-glow { 0%,100%{box-shadow:0 0 8px var(--gold),0 0 20px var(--gold);opacity:0.6} 50%{box-shadow:0 0 22px var(--gold),0 0 55px var(--gold);opacity:1} }
+
+/* ── Preview plante ─────────────────────────────────────────────────── */
 .plant-preview { display: flex; flex-direction: column; align-items: center; gap: 14px; }
 #plantCharacter svg { width: 150px; height: 170px; }
 #plantDescription { color: var(--muted); font-size: 0.88rem; text-align: center; }
+
+/* ── Arbre mutations ────────────────────────────────────────────────── */
 .mutation-tree-wrap { width: 100%; overflow-x: auto; overflow-y: hidden; border: 1px solid var(--border); border-radius: 18px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.08)); padding: 10px; }
 .mutation-tree-svg { width: 100%; min-width: 980px; height: auto; display: block; }
 .tree-tier-label { fill: var(--muted); font-size: 14px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
-.tree-link { fill: none; stroke: rgba(126, 200, 80, 0.35); stroke-width: 3; stroke-linecap: round; }
+.tree-link { fill: none; stroke: rgba(126,200,80,0.35); stroke-width: 3; stroke-linecap: round; }
+.tree-link.link-locked { stroke: rgba(255,255,255,0.08); }
 .tree-node { cursor: pointer; }
 .tree-card-bg { fill: #0d160e; stroke: var(--border); stroke-width: 1.5; transition: all 0.2s ease; }
 .tree-node:hover .tree-card-bg { stroke: var(--accent); filter: url(#softGlow); }
+.tree-node.state-server-known .tree-card-bg { fill: #0a0e0a; stroke: #2a3a2a; }
+.tree-node.state-unknown .tree-card-bg { fill: #080d08; stroke: #1a221a; }
 .tree-name { fill: var(--text); font-size: 13px; font-weight: 700; }
+.tree-name-hidden { fill: #3a4a3a; font-size: 13px; font-weight: 700; }
 .tree-meta { fill: var(--muted); font-size: 11px; }
+.tree-meta-hidden { fill: #2a3a2a; font-size: 11px; }
 .tree-discovery { fill: var(--gold); font-size: 11px; font-weight: 700; }
+.tree-server-badge { fill: var(--accent-2); font-size: 10px; }
 .tree-node.rarity-epic .tree-card-bg { stroke: #7a49d6; }
 .tree-node.rarity-legendary .tree-card-bg { stroke: #d9a520; }
 .tree-node.rarity-mythic .tree-card-bg { stroke: #e44a80; }
+
+/* ── Codex ──────────────────────────────────────────────────────────── */
+.codex-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 14px; }
+.codex-card { background: #0d160e; border: 1px solid var(--border); border-radius: 16px; padding: 14px; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
+.codex-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+.codex-card h3 { font-size: 0.95rem; margin: 6px 0 4px; }
+.codex-card p { font-size: 0.82rem; color: var(--muted); margin: 5px 0; }
+.codex-meta { font-size: 0.82rem; color: var(--muted); }
+.codex-sprite svg { width: 70px; height: 80px; display: block; margin: 0 auto; }
+.rarity-badge { font-weight: 700; font-size: 0.8rem; text-transform: capitalize; }
+.rarity-badge.common { color: #aaa; } .rarity-badge.rare { color: var(--accent-2); } .rarity-badge.epic { color: #c080ff; } .rarity-badge.legendary { color: var(--gold); } .rarity-badge.mythic { color: #ff6090; }
+.codex-card.rarity-epic { border-color: #6030a0; } .codex-card.rarity-legendary { border-color: #c0900a; } .codex-card.rarity-mythic { border-color: #c02060; box-shadow: 0 0 12px rgba(255,60,120,0.3); }
+.first-discovery { font-size: 0.8rem; font-weight: 700; color: var(--gold); margin-top: 6px; }
+
+/* État server-known */
+.codex-card.state-server-known { background: #090e09; border-color: #1e2e1e; cursor: default; }
+.codex-card.state-server-known:hover { transform: none; box-shadow: none; }
+.codex-silhouette svg { filter: brightness(0) invert(0.07) sepia(1) hue-rotate(90deg); opacity: 0.5; }
+.codex-unknown-name { color: #3a503a; font-style: italic; }
+.codex-server-badge { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 0.78rem; color: var(--accent-2); background: rgba(95,165,245,0.08); border: 1px solid rgba(95,165,245,0.2); border-radius: 8px; padding: 5px 8px; }
+.codex-discoverer-avatar { width: 18px; height: 18px; border-radius: 50%; object-fit: cover; }
+
+/* État unknown */
+.codex-card.state-unknown { background: #060b06; border-color: #151e15; cursor: default; opacity: 0.55; }
+.codex-card.state-unknown:hover { transform: none; }
+.codex-mystery { display: flex; align-items: center; justify-content: center; width: 70px; height: 80px; margin: 0 auto; font-size: 2rem; color: #2a3a2a; border: 2px dashed #1e2e1e; border-radius: 12px; }
+
+/* ── Testers ────────────────────────────────────────────────────────── */
 .testers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
 .tester-card { background: #0d160e; border: 1px solid var(--border); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative; transition: transform 0.2s; }
 .tester-card.tasting { animation: tasting-shake 0.4s ease; }
@@ -70,6 +145,8 @@ button:hover { opacity: 0.9; } button:active { transform: scale(0.97); } button:
 .taste-hint { font-size: 0.78rem; color: var(--muted); text-align: center; }
 .reaction-bubble { position: absolute; top: -38px; left: 50%; transform: translateX(-50%); background: #1e301f; border: 1px solid var(--border); border-radius: 12px; padding: 6px 12px; font-size: 0.82rem; white-space: nowrap; animation: bubble-pop 2.5s ease forwards; pointer-events: none; z-index: 5; }
 @keyframes bubble-pop { 0%{opacity:0;transform:translateX(-50%) translateY(6px)} 15%{opacity:1;transform:translateX(-50%) translateY(0)} 80%{opacity:1} 100%{opacity:0;transform:translateX(-50%) translateY(-10px)} }
+
+/* ── Inventaire ─────────────────────────────────────────────────────── */
 .inventory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
 .inv-card { background: #0d160e; border: 1px solid var(--border); border-radius: 16px; padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: transform 0.15s; }
 .inv-card:hover { transform: translateY(-2px); }
@@ -82,15 +159,5 @@ button:hover { opacity: 0.9; } button:active { transform: scale(0.97); } button:
 .inv-meta { font-size: 0.8rem; color: var(--muted); margin: 3px 0; }
 .inv-qty { font-size: 1.1rem; font-weight: 700; color: var(--accent); }
 .inv-select-btn { font-size: 0.8rem; padding: 6px 12px; border-radius: 10px; width: 100%; }
-.codex-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 14px; }
-.codex-card { background: #0d160e; border: 1px solid var(--border); border-radius: 16px; padding: 14px; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
-.codex-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
-.codex-card h3 { font-size: 0.95rem; margin: 6px 0 4px; }
-.codex-card p { font-size: 0.82rem; color: var(--muted); margin: 5px 0; }
-.codex-meta { font-size: 0.82rem; color: var(--muted); }
-.codex-sprite svg { width: 70px; height: 80px; display: block; margin: 0 auto; }
-.rarity-badge { font-weight: 700; font-size: 0.8rem; text-transform: capitalize; }
-.rarity-badge.common { color: #aaa; } .rarity-badge.rare { color: var(--accent-2); } .rarity-badge.epic { color: #c080ff; } .rarity-badge.legendary { color: var(--gold); } .rarity-badge.mythic { color: #ff6090; }
-.codex-card.rarity-epic { border-color: #6030a0; } .codex-card.rarity-legendary { border-color: #c0900a; } .codex-card.rarity-mythic { border-color: #c02060; box-shadow: 0 0 12px rgba(255,60,120,0.3); }
-.first-discovery { font-size: 0.8rem; font-weight: 700; color: var(--gold); margin-top: 6px; }
+
 @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .mutation-tree-svg { min-width: 860px; } }
