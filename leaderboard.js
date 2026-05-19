@@ -1,30 +1,57 @@
-// leaderboard.js — Botanica Obscura Leaderboard
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from './config.js'
+import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from './config.js';
+import { renderPodium, renderRows } from './lib/leaderboard.js';
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+const tbody   = document.getElementById('lb-body');
+const podium  = document.getElementById('lb-podium');
+const empty   = document.getElementById('lb-empty');
+const errEl   = document.getElementById('lb-error');
+const tabs    = document.querySelectorAll('.lb-tab');
+
+let currentSort = 'xp';
 
 async function loadLeaderboard() {
+  tbody.innerHTML = '<tr><td colspan="5" class="lb-loading">Chargement…</td></tr>';
+  empty.hidden = true;
+  errEl.hidden = true;
+
+  const orderCol = currentSort === 'codex' ? 'codex_count' : 'xp';
+
   const { data, error } = await supabase
     .from('botanica_leaderboard')
     .select('rank, display_name, avatar_url, codex_count, level, xp')
-    .order('rank')
-    .limit(50)
+    .order(orderCol, { ascending: false })
+    .limit(50);
 
-  if (error) { console.error(error); return; }
+  if (error) {
+    tbody.innerHTML = '';
+    errEl.hidden = false;
+    return;
+  }
 
-  const tbody = document.getElementById('lb-body')
-  tbody.innerHTML = data.map(r => `
-    <tr class="${r.rank <= 3 ? 'lb-top' : ''}">
-      <td class="lb-rank">${r.rank <= 3 ? ['\u{1F947}','\u{1F948}','\u{1F949}'][r.rank-1] : r.rank}</td>
-      <td class="lb-name">
-        ${r.avatar_url ? `<img src="${r.avatar_url}" class="lb-avatar">` : '\uD83C\uDF3F'}
-        ${r.display_name}
-      </td>
-      <td class="lb-codex">${r.codex_count}</td>
-      <td class="lb-level">${r.level}</td>
-      <td class="lb-xp">${r.xp.toLocaleString()}</td>
-    </tr>`).join('')
+  if (!data || data.length === 0) {
+    tbody.innerHTML = '';
+    empty.hidden = false;
+    return;
+  }
+
+  // Recalcul du rang selon le tri actif
+  const ranked = data.map((r, i) => ({ ...r, rank: i + 1 }));
+
+  renderPodium(podium, ranked.slice(0, 3));
+  renderRows(tbody, ranked);
 }
 
-loadLeaderboard()
+tabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    tabs.forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentSort = tab.dataset.tab;
+    loadLeaderboard();
+  });
+});
+
+// Chargement initial + refresh toutes les 60s
+loadLeaderboard();
+setInterval(loadLeaderboard, 60_000);

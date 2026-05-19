@@ -1,0 +1,133 @@
+/* ── Layout principal ───────────────────────────────────────── */
+.lb-main {
+  max-width: 860px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.lb-title {
+  text-align: center;
+  font-size: 1.8rem;
+  margin-bottom: 1.2rem;
+}
+
+/* ── Onglets ───────────────────────────────────────────────── */
+.lb-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.lb-tab {
+  padding: 0.4rem 1.2rem;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 20px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.lb-tab:hover   { background: rgba(255,255,255,0.08); }
+.lb-tab.active  { background: rgba(100,200,100,0.2); border-color: #6ec86e; }
+
+/* ── Podium top 3 ─────────────────────────────────────────── */
+.lb-podium {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.podium-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 1rem 1.2rem;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.05);
+  min-width: 130px;
+  text-align: center;
+}
+
+.podium-1 {
+  order: 2;
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  transform: scale(1.06);
+}
+.podium-2 {
+  order: 1;
+  background: rgba(192, 192, 192, 0.08);
+  border: 1px solid rgba(192,192,192,0.2);
+}
+.podium-3 {
+  order: 3;
+  background: rgba(180, 100, 40, 0.08);
+  border: 1px solid rgba(180,100,40,0.2);
+}
+
+.podium-medal  { font-size: 1.8rem; }
+.podium-name   { font-weight: 600; font-size: 0.95rem; }
+.podium-xp     { font-size: 0.85rem; color: #a0d080; }
+.podium-codex  { font-size: 0.78rem; color: #888; }
+
+/* ── Avatar ─────────────────────────────────────────────────── */
+.lb-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.lb-avatar-fallback {
+  font-size: 1.4rem;
+  line-height: 36px;
+}
+
+/* ── Tableau ──────────────────────────────────────────────── */
+.lb-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.lb-table th,
+.lb-table td {
+  padding: 0.6rem 1rem;
+  text-align: center;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.lb-table th {
+  opacity: 0.55;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.lb-top { background: rgba(255, 215, 0, 0.05); }
+
+.lb-rank  { font-size: 1rem; font-weight: bold; width: 3rem; }
+.lb-medal { font-size: 1.2rem; }
+
+.lb-col-name { text-align: left; }
+.lb-name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ── États ───────────────────────────────────────────────────── */
+.lb-loading,
+.lb-empty,
+.lb-error {
+  text-align: center;
+  padding: 2rem;
+  opacity: 0.55;
+}
+
+.lb-error { color: #e07070; opacity: 1; }

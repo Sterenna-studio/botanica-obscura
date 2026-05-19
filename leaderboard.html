@@ -5,81 +5,49 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Botanica Obscura — Classement</title>
   <link rel="stylesheet" href="styles.css">
-  <style>
-    .leaderboard-container {
-      max-width: 800px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-    }
-    .leaderboard-title {
-      text-align: center;
-      font-size: 2rem;
-      margin-bottom: 1.5rem;
-    }
-    #leaderboard-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    #leaderboard-table th,
-    #leaderboard-table td {
-      padding: 0.6rem 1rem;
-      text-align: center;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-    }
-    #leaderboard-table th {
-      opacity: 0.6;
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    .lb-name {
-      text-align: left;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .lb-avatar {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-    .lb-rank {
-      font-size: 1.2rem;
-      font-weight: bold;
-    }
-    .lb-top {
-      background: rgba(255, 215, 0, 0.06);
-    }
-    .back-link {
-      display: block;
-      text-align: center;
-      margin-top: 2rem;
-      opacity: 0.6;
-      font-size: 0.9rem;
-    }
-    .back-link:hover { opacity: 1; }
-  </style>
+  <link rel="stylesheet" href="styles/leaderboard.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-  <div class="leaderboard-container">
-    <h1 class="leaderboard-title">🌿 Classement des Botanistes</h1>
-    <table id="leaderboard-table">
+  <header class="topbar">
+    <div>
+      <h1>🌿 Botanica Obscura</h1>
+      <p class="subtitle">Classement des Botanistes</p>
+    </div>
+    <div class="player-stats">
+      <a href="index.html" class="nav-link">← Retour au jardin</a>
+    </div>
+  </header>
+
+  <main class="lb-main">
+    <h2 class="lb-title">🏆 Hall of Fame</h2>
+
+    <div class="lb-tabs" role="tablist">
+      <button class="lb-tab active" data-tab="xp" role="tab">Classement XP</button>
+      <button class="lb-tab" data-tab="codex" role="tab">Codex découvert</button>
+    </div>
+
+    <div id="lb-podium" class="lb-podium" aria-label="Top 3"></div>
+
+    <table class="lb-table" aria-label="Classement complet">
       <thead>
         <tr>
           <th>#</th>
-          <th style="text-align:left">Joueur</th>
+          <th class="lb-col-name">Botaniste</th>
           <th>Codex</th>
           <th>Niveau</th>
           <th>XP</th>
         </tr>
       </thead>
       <tbody id="lb-body">
-        <tr><td colspan="5" style="opacity:0.5;padding:2rem">Chargement…</td></tr>
+        <tr><td colspan="5" class="lb-loading">Chargement…</td></tr>
       </tbody>
     </table>
-    <a class="back-link" href="index.html">← Retour au jardin</a>
-  </div>
+
+    <p id="lb-empty" class="lb-empty" hidden>Aucun botaniste classé pour l’instant. Soyez le premier !</p>
+    <p id="lb-error" class="lb-error" hidden>Erreur de chargement. Vérifiez votre connexion.</p>
+  </main>
+
   <script type="module" src="leaderboard.js"></script>
 </body>
 </html>
