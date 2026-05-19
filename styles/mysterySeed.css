@@ -1,0 +1,62 @@
+/* ── Mystery Seed zone ────────────────────────────── */
+#mystery-seed-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1.25rem;
+  background: rgba(20,35,20,0.5);
+  border: 1px dashed rgba(120,200,80,0.3);
+  border-radius: 14px;
+  text-align: center;
+}
+
+#mystery-seed-zone h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #a0d070;
+}
+
+#mystery-seed-btn {
+  padding: 0.65rem 1.4rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, #3a6e20, #5a9e30);
+  color: #d8f0b0;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+}
+#mystery-seed-btn:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: scale(1.02);
+}
+#mystery-seed-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#mystery-seed-countdown {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #90c060;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+}
+
+#mystery-seed-msg {
+  font-size: 0.88rem;
+  color: #b0e080;
+  min-height: 1.2em;
+}
+
+.mystery-seed-anim {
+  display: inline-block;
+  animation: seed-pop 0.5s ease;
+}
+@keyframes seed-pop {
+  0%   { transform: scale(0.8); opacity: 0; }
+  60%  { transform: scale(1.1); }
+  100% { transform: scale(1);   opacity: 1; }
+}
