@@ -11,6 +11,7 @@ import { initAuthModal } from './lib/authModal.js';
 import { loadGarden, renderGarden, buyGardenEffect } from './lib/garden.js';
 import { loadPlayerData, renderPlayerStats } from './lib/playerData.js';
 import { QUALITY_TIERS } from './lib/quality.js';
+import { initMysterySeed } from './lib/mysterySeed.js';
 
 export const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
@@ -291,6 +292,8 @@ async function init() {
     await loadSpecies();
     resetPotVisual();
     await Promise.all([refreshInventory(), refreshTesters(), refreshGarden()]);
+
+    initMysterySeed(refreshInventory);
 
     const pot = await loadActivePot(getUserId());
     if (pot) { activePot = pot; tickProgress(); }

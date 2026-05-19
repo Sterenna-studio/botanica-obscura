@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="styles/garden.css" />
     <link rel="stylesheet" href="styles/inventory.css" />
     <link rel="stylesheet" href="styles/toast.css" />
+    <link rel="stylesheet" href="styles/mysterySeed.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   </head>
   <body>
@@ -79,6 +80,16 @@
         <p class="muted">Cliquez sur "Utiliser" pour sélectionner une graine dans le pot de mutation. Vendez au NPC pour gagner des pièces.</p>
         <div id="inventoryEmpty" class="muted" style="display:none">Aucune graine pour l'instant.</div>
         <div id="inventoryGrid" class="inventory-grid"></div>
+      </section>
+
+      <section class="panel full-width">
+        <div id="mystery-seed-zone">
+          <h3>📦 Colis mystère</h3>
+          <p class="muted">Une graine aléatoire Tier 1 toutes les 12h. L’espèce sera révélée dans le pot de mutation.</p>
+          <button id="mystery-seed-btn">📦 Récupérer ma graine mystère</button>
+          <div id="mystery-seed-countdown"></div>
+          <div id="mystery-seed-msg"></div>
+        </div>
       </section>
 
       <section class="panel full-width">
