@@ -28,14 +28,14 @@ const plantDescription = document.getElementById('plantDescription');
 const potVisual        = document.getElementById('potVisual');
 const notifBtn         = document.getElementById('notifBtn');
 
-let speciesList        = [];
-let playerCodexIds     = new Set();
-let activePot          = null;
-let progressInterval   = null;
-let testers            = [];
+let speciesList          = [];
+let playerCodexIds       = new Set();
+let activePot            = null;
+let progressInterval     = null;
+let testers              = [];
 let lastHarvestedSpecies = null;
-let currentGarden      = {};
-let currentPlayerData  = { coins: 0, level: 1, xp: 0 };
+let currentGarden        = {};
+let currentPlayerData    = { coins: 0, level: 1, xp: 0 };
 
 // ── Espèces ──────────────────────────────────────────────────────────────
 async function loadSpecies() {
@@ -131,12 +131,21 @@ function renderCodex() {
 // ── Inventaire & Testers ──────────────────────────────────────────────────
 async function refreshInventory() {
   const seeds = await loadInventory(getUserId());
-  renderInventory(seeds, (speciesId) => {
-    const optA = speciesASelect.querySelector(`option[value="${speciesId}"]`);
-    if (optA) { speciesASelect.value = speciesId; renderPreview(getSelected(speciesASelect)); }
-    else       { speciesBSelect.value = speciesId; }
-    document.querySelector('.panel')?.scrollIntoView({ behavior: 'smooth' });
-  });
+  renderInventory(
+    seeds,
+    (speciesId) => {
+      const optA = speciesASelect.querySelector(`option[value="${speciesId}"]`);
+      if (optA) { speciesASelect.value = speciesId; renderPreview(getSelected(speciesASelect)); }
+      else       { speciesBSelect.value = speciesId; }
+      document.querySelector('.panel')?.scrollIntoView({ behavior: 'smooth' });
+    },
+    (newCoins) => {
+      currentPlayerData.coins = newCoins;
+      renderPlayerStats(currentPlayerData);
+      renderGarden(currentGarden, newCoins, onBuyGardenEffect);
+    },
+    getUserId()
+  );
 }
 
 async function refreshTesters() {
@@ -153,7 +162,7 @@ async function refreshGarden() {
 async function onBuyGardenEffect(effectId) {
   const result = await buyGardenEffect(getUserId(), effectId, currentPlayerData.coins, currentGarden);
   if (result.error) { alert(result.error); return; }
-  currentGarden      = result.newGarden;
+  currentGarden           = result.newGarden;
   currentPlayerData.coins = result.newCoins;
   renderPlayerStats(currentPlayerData);
   renderGarden(currentGarden, currentPlayerData.coins, onBuyGardenEffect);
@@ -238,11 +247,11 @@ harvestBtn.addEventListener('click', async () => {
   if (result.error) { mutationStatus.textContent = `❌ ${result.error}`; harvestBtn.disabled = false; return; }
 
   lastHarvestedSpecies = result.result_species;
-  const quality     = QUALITY_TIERS.find(t => t.id === result.quality_tier_id) ?? QUALITY_TIERS[1];
-  const firstMsg    = result.first_server_discovery ? ' 🏅 PREMIÈRE DÉCOUVERTE SERVEUR !' : '';
+  const quality  = QUALITY_TIERS.find(t => t.id === result.quality_tier_id) ?? QUALITY_TIERS[1];
+  const firstMsg = result.first_server_discovery ? ' 🏅 PREMIÈRE DÉCOUVERTE SERVEUR !' : '';
   mutationStatus.textContent = `🌺 Obtenu : ${lastHarvestedSpecies.name} (${lastHarvestedSpecies.rarity}) — ${quality.label}${firstMsg}`;
 
-  activePot          = null;
+  activePot           = null;
   harvestBtn.disabled = false;
   cancelPotNotification();
   clearInterval(progressInterval);
@@ -250,7 +259,6 @@ harvestBtn.addEventListener('click', async () => {
   await Promise.all([loadSpecies(), refreshInventory(), refreshTesters()]);
   resetPotVisual();
 
-  // Refresh coins après récolte
   currentPlayerData = await loadPlayerData(getUserId());
   renderPlayerStats(currentPlayerData);
   renderGarden(currentGarden, currentPlayerData.coins, onBuyGardenEffect);
