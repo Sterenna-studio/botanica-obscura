@@ -1,4 +1,4 @@
-import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from './config.js';
+import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from '../config.js';
 import { renderPodium, renderRows } from './lib/leaderboard.js';
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
@@ -36,7 +36,6 @@ async function loadLeaderboard() {
     return;
   }
 
-  // Recalcul du rang selon le tri actif
   const ranked = data.map((r, i) => ({ ...r, rank: i + 1 }));
 
   renderPodium(podium, ranked.slice(0, 3));
@@ -52,6 +51,5 @@ tabs.forEach(tab => {
   });
 });
 
-// Chargement initial + refresh toutes les 60s
 loadLeaderboard();
 setInterval(loadLeaderboard, 60_000);

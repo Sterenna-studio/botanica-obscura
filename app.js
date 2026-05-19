@@ -1,4 +1,4 @@
-import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from './config.js';
+import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from '../config.js';
 import { createPlantCharacterSvg } from './lib/plantSvg.js';
 import { getFallbackSpeciesTree } from './lib/speciesTree.js';
 import { startMutationPot, loadActivePot, harvestMutation } from './lib/mutation.js';
