@@ -1,0 +1,78 @@
+/* ── Inventaire ─────────────────────────────────────────────── */
+.inv-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.75rem 0.5rem;
+  background: rgba(255,255,255,0.05);
+  border-radius: 12px;
+  border-left: 4px solid transparent;
+  transition: transform 0.15s;
+}
+
+.inv-card:hover { transform: translateY(-2px); }
+
+.inv-sprite svg { width: 64px; height: 76px; }
+
+.inv-info { text-align: center; }
+
+.inv-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 0.2rem;
+}
+
+.inv-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  color: #aaa;
+}
+
+.inv-qty {
+  font-size: 0.8rem;
+  color: #ccc;
+  margin-top: 0.1rem;
+}
+
+/* Actions : Utiliser + Vendre côte à côte */
+.inv-actions {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.3rem;
+}
+
+.inv-select-btn,
+.inv-sell-btn {
+  padding: 0.3rem 0.6rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 600;
+  transition: opacity 0.15s;
+}
+
+.inv-select-btn {
+  background: #4a8a3a;
+  color: #fff;
+}
+
+.inv-sell-btn {
+  background: #7a5a1a;
+  color: #ffe07a;
+}
+
+.inv-select-btn:hover { opacity: 0.85; }
+.inv-sell-btn:hover   { opacity: 0.85; }
+.inv-sell-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Bordures par rareté */
+.rarity-border-common    { border-left-color: #8d8d8d; }
+.rarity-border-rare      { border-left-color: #4a90d9; }
+.rarity-border-epic      { border-left-color: #9b59b6; }
+.rarity-border-legendary { border-left-color: #f39c12; }
+.rarity-border-mythic    { border-left-color: #e74c3c; }
