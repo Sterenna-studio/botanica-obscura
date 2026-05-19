@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Botanica Obscura</title>
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles/garden.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   </head>
   <body>
@@ -14,11 +15,10 @@
         <p class="subtitle">Idle gacha botanique • mutations • codex partagé</p>
       </div>
       <div class="player-stats">
-        <span id="coins">🪙 100</span>
+        <span id="coins">🪙 0</span>
         <span id="level">Lv. 1</span>
+        <a href="leaderboard.html" class="nav-link">🏆 Classement</a>
         <button id="notifBtn" class="notif-btn">🔔 Activer notifs</button>
-
-        <!-- Zone auth -->
         <div id="authZone" class="auth-zone">
           <button id="loginBtn" class="auth-btn login-btn">🔑 Connexion</button>
           <div id="userBadge" class="user-badge" style="display:none"></div>
@@ -37,7 +37,7 @@
           <label>Espèce mère B
             <select id="speciesB"></select>
           </label>
-          <button id="startMutationBtn">Lancer une mutation (24h)</button>
+          <button id="startMutationBtn">Lancer une mutation (12h)</button>
           <button id="harvestBtn" style="display:none">🌺 Récolter la mutation</button>
           <div id="mutationStatus" class="status"></div>
           <div class="progress-wrap"><div id="progressBar" class="progress-bar"></div></div>
@@ -54,6 +54,12 @@
       </section>
 
       <section class="panel full-width">
+        <h2>🌡️ Jardin &amp; Améliorations</h2>
+        <p class="muted">Améliorez votre jardin pour augmenter la qualité de vos récoltes. Achetez avec vos 🪙 gagnées en vendant au NPC.</p>
+        <div id="gardenContainer" class="garden-grid"></div>
+      </section>
+
+      <section class="panel full-width">
         <h2>🗺️ Arbre des mutations</h2>
         <p class="muted">Clique sur une espèce pour la prévisualiser et suivre ses branches de mutation.</p>
         <div id="mutationTree" class="mutation-tree-wrap"></div>
@@ -67,7 +73,7 @@
 
       <section class="panel full-width">
         <h2>🎒 Inventaire des graines</h2>
-        <p class="muted">Cliquez sur "Utiliser" pour sélectionner une graine dans le pot de mutation.</p>
+        <p class="muted">Cliquez sur "Utiliser" pour sélectionner une graine dans le pot de mutation. Vendez au NPC pour gagner des pièces.</p>
         <div id="inventoryEmpty" class="muted" style="display:none">Aucune graine pour l'instant.</div>
         <div id="inventoryGrid" class="inventory-grid"></div>
       </section>

@@ -1,0 +1,96 @@
+/* styles/garden.css — Section jardin et shop */
+
+.garden-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.garden-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: border-color 0.2s;
+}
+
+.garden-card:hover {
+  border-color: rgba(126, 200, 80, 0.4);
+}
+
+.garden-card.garden-maxed {
+  border-color: rgba(216, 112, 192, 0.4);
+  background: rgba(216, 112, 192, 0.05);
+}
+
+.garden-emoji {
+  font-size: 2rem;
+  text-align: center;
+}
+
+.garden-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.garden-desc {
+  font-size: 0.8rem;
+  opacity: 0.6;
+  line-height: 1.4;
+}
+
+.garden-level {
+  font-size: 0.85rem;
+  color: #f4a030;
+  letter-spacing: 0.05em;
+}
+
+.garden-maxed-label {
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #d870f0;
+  letter-spacing: 0.1em;
+}
+
+.garden-buy-btn {
+  margin-top: auto;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid rgba(126, 200, 80, 0.5);
+  background: rgba(126, 200, 80, 0.1);
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.garden-buy-btn:hover:not([disabled]) {
+  background: rgba(126, 200, 80, 0.25);
+}
+
+.garden-buy-btn.disabled,
+.garden-buy-btn[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Quality tier badge */
+.quality-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  background: rgba(255,255,255,0.07);
+}
+
+.quality-guezmer  { color: #999; }
+.quality-potable  { color: #7ec850; }
+.quality-frape    { color: #5bc8ef; }
+.quality-banger   { color: #f4a030; }
+.quality-comète   { color: #d870f0; }

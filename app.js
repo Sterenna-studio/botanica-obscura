@@ -8,10 +8,12 @@ import { requestNotifPermission, schedulePotNotification, cancelPotNotification,
 import { renderMutationTree } from './lib/mutationTree.js';
 import { onAuthReady, getBotanicaUserId, isLoggedIn } from './lib/auth.js';
 import { initAuthModal } from './lib/authModal.js';
+import { loadGarden, renderGarden, buyGardenEffect } from './lib/garden.js';
+import { loadPlayerData, renderPlayerStats } from './lib/playerData.js';
+import { QUALITY_TIERS } from './lib/quality.js';
 
 export const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-// userId dynamique : auth.uid() si connecté, sinon anon local
 export function getUserId() { return getBotanicaUserId(); }
 
 const speciesASelect   = document.getElementById('speciesA');
@@ -26,23 +28,23 @@ const plantDescription = document.getElementById('plantDescription');
 const potVisual        = document.getElementById('potVisual');
 const notifBtn         = document.getElementById('notifBtn');
 
-let speciesList = [];
-let playerCodexIds = new Set(); // IDs espèces débloquées par CE joueur
-let activePot = null;
-let progressInterval = null;
-let testers = [];
+let speciesList        = [];
+let playerCodexIds     = new Set();
+let activePot          = null;
+let progressInterval   = null;
+let testers            = [];
 let lastHarvestedSpecies = null;
+let currentGarden      = {};
+let currentPlayerData  = { coins: 0, level: 1, xp: 0 };
 
-// ── Chargement des espèces depuis la vue matérialisée ────────────────────
+// ── Espèces ──────────────────────────────────────────────────────────────
 async function loadSpecies() {
-  // Lecture depuis codex_botanique_global (snapshot cron, léger)
   const { data: globalData, error: globalErr } = await supabase
     .from('codex_botanique_global')
     .select('*')
     .order('tier', { ascending: true })
-    .order('id', { ascending: true });
+    .order('id',   { ascending: true });
 
-  // Lecture du codex personnel du joueur (own ids uniquement)
   const userId = getUserId();
   const { data: codexData } = await supabase
     .from('player_codex')
@@ -61,7 +63,6 @@ async function loadSpecies() {
   renderPreview(speciesList.find(s => playerCodexIds.has(s.id)) ?? speciesList[0]);
 }
 
-// ── Sélecteurs espèces (uniquement débloquées) ────────────────────────────
 function populateSpeciesSelects() {
   const unlocked = speciesList.filter(s => playerCodexIds.has(s.id));
   const options  = unlocked.map(s =>
@@ -79,11 +80,11 @@ function getSelected(select) {
 
 function renderPreview(species) {
   if (!species) return;
-  plantCharacter.innerHTML = createPlantCharacterSvg(species);
+  plantCharacter.innerHTML  = createPlantCharacterSvg(species);
   plantDescription.textContent = species.description || 'Aucune description.';
 }
 
-// ── Rendu codex avec 3 états ─────────────────────────────────────────────
+// ── Codex ─────────────────────────────────────────────────────────────────
 function renderCodex() {
   codexGrid.innerHTML = speciesList.map(s => {
     const state = playerCodexIds.has(s.id)
@@ -100,7 +101,6 @@ function renderCodex() {
           ${s.was_first_server ? '<div class="first-discovery">🏅 1ère découverte serveur</div>' : ''}
         </article>`;
     }
-
     if (state === 'server-known') {
       return `
         <article class="codex-card state-server-known" data-id="${s.id}" title="Découverte par ${s.discoverer_name ?? 'un autre joueur'}">
@@ -113,8 +113,6 @@ function renderCodex() {
           </div>
         </article>`;
     }
-
-    // unknown
     return `
       <article class="codex-card state-unknown" data-id="${s.id}">
         <div class="codex-sprite codex-mystery">?</div>
@@ -130,12 +128,13 @@ function renderCodex() {
   });
 }
 
+// ── Inventaire & Testers ──────────────────────────────────────────────────
 async function refreshInventory() {
   const seeds = await loadInventory(getUserId());
   renderInventory(seeds, (speciesId) => {
     const optA = speciesASelect.querySelector(`option[value="${speciesId}"]`);
     if (optA) { speciesASelect.value = speciesId; renderPreview(getSelected(speciesASelect)); }
-    else { speciesBSelect.value = speciesId; }
+    else       { speciesBSelect.value = speciesId; }
     document.querySelector('.panel')?.scrollIntoView({ behavior: 'smooth' });
   });
 }
@@ -145,6 +144,22 @@ async function refreshTesters() {
   renderTesters(testers, lastHarvestedSpecies);
 }
 
+// ── Jardin ────────────────────────────────────────────────────────────────
+async function refreshGarden() {
+  currentGarden = await loadGarden(getUserId());
+  renderGarden(currentGarden, currentPlayerData.coins, onBuyGardenEffect);
+}
+
+async function onBuyGardenEffect(effectId) {
+  const result = await buyGardenEffect(getUserId(), effectId, currentPlayerData.coins, currentGarden);
+  if (result.error) { alert(result.error); return; }
+  currentGarden      = result.newGarden;
+  currentPlayerData.coins = result.newCoins;
+  renderPlayerStats(currentPlayerData);
+  renderGarden(currentGarden, currentPlayerData.coins, onBuyGardenEffect);
+}
+
+// ── Animation pot ─────────────────────────────────────────────────────────
 export function updateGrowAnimation(pot) {
   if (!pot) { resetPotVisual(); return; }
   const now   = Date.now();
@@ -162,12 +177,12 @@ export function updateGrowAnimation(pot) {
 
   if (pct >= 100) {
     mutationStatus.textContent = '✅ Mutation prête ! Récoltez !';
-    harvestBtn.style.display = 'block';
+    harvestBtn.style.display   = 'block';
     startMutationBtn.style.display = 'none';
     clearInterval(progressInterval);
   } else {
     mutationStatus.textContent = `🌱 En cours... ${h}h ${m}m restant (stade ${stage}/4)`;
-    harvestBtn.style.display = 'none';
+    harvestBtn.style.display   = 'none';
     startMutationBtn.style.display = 'none';
   }
 }
@@ -186,12 +201,13 @@ function renderPotStage(stage, ready) {
 
 function resetPotVisual() {
   potVisual.innerHTML = `<div class="pot-stage stage-0"><div class="pot-emoji">🪴</div><div class="pot-label">Pot vide</div></div>`;
-  progressBar.style.width = '0%';
-  harvestBtn.style.display = 'none';
+  progressBar.style.width        = '0%';
+  harvestBtn.style.display       = 'none';
   startMutationBtn.style.display = 'block';
-  mutationStatus.textContent = 'Choisissez deux espèces mères pour lancer une mutation.';
+  mutationStatus.textContent     = 'Choisissez deux espèces mères pour lancer une mutation.';
 }
 
+// ── Mutation : lancement & récolte ────────────────────────────────────────
 startMutationBtn.addEventListener('click', async () => {
   if (!isLoggedIn()) {
     mutationStatus.textContent = '🔒 Connectez-vous pour lancer une mutation.';
@@ -201,8 +217,8 @@ startMutationBtn.addEventListener('click', async () => {
   const aId = Number(speciesASelect.value);
   const bId = Number(speciesBSelect.value);
   if (!aId || !bId) return;
-  mutationStatus.textContent = '⏳ Lancement...';
-  startMutationBtn.disabled = true;
+  mutationStatus.textContent  = '⏳ Lancement...';
+  startMutationBtn.disabled   = true;
 
   const result = await startMutationPot(getUserId(), aId, bId);
   startMutationBtn.disabled = false;
@@ -215,23 +231,29 @@ startMutationBtn.addEventListener('click', async () => {
 
 harvestBtn.addEventListener('click', async () => {
   if (!activePot) return;
-  harvestBtn.disabled = true;
+  harvestBtn.disabled        = true;
   mutationStatus.textContent = '🎲 Résolution du gacha...';
 
-  const result = await harvestMutation(activePot.id, getUserId());
+  const result = await harvestMutation(activePot.id, getUserId(), currentGarden);
   if (result.error) { mutationStatus.textContent = `❌ ${result.error}`; harvestBtn.disabled = false; return; }
 
   lastHarvestedSpecies = result.result_species;
-  const firstMsg = result.first_server_discovery ? ' 🏅 PREMIÈRE DÉCOUVERTE SERVEUR !' : '';
-  mutationStatus.textContent = `🌺 Obtenu : ${lastHarvestedSpecies.name} (${lastHarvestedSpecies.rarity})${firstMsg}`;
+  const quality     = QUALITY_TIERS.find(t => t.id === result.quality_tier_id) ?? QUALITY_TIERS[1];
+  const firstMsg    = result.first_server_discovery ? ' 🏅 PREMIÈRE DÉCOUVERTE SERVEUR !' : '';
+  mutationStatus.textContent = `🌺 Obtenu : ${lastHarvestedSpecies.name} (${lastHarvestedSpecies.rarity}) — ${quality.label}${firstMsg}`;
 
-  activePot = null;
+  activePot          = null;
   harvestBtn.disabled = false;
   cancelPotNotification();
   clearInterval(progressInterval);
 
   await Promise.all([loadSpecies(), refreshInventory(), refreshTesters()]);
   resetPotVisual();
+
+  // Refresh coins après récolte
+  currentPlayerData = await loadPlayerData(getUserId());
+  renderPlayerStats(currentPlayerData);
+  renderGarden(currentGarden, currentPlayerData.coins, onBuyGardenEffect);
 });
 
 function tickProgress() {
@@ -244,20 +266,23 @@ if (notifBtn) {
   notifBtn.addEventListener('click', async () => {
     const granted = await requestNotifPermission();
     notifBtn.textContent = granted ? '🔔 Notifs activées' : '🔕 Notifs refusées';
-    notifBtn.disabled = granted;
+    notifBtn.disabled    = granted;
     if (granted && activePot) schedulePotNotification(activePot.ready_at);
   });
 }
 
-// ── Init : attend la session auth avant de tout charger ──────────────────
+// ── Init ──────────────────────────────────────────────────────────────────
 async function init() {
   initAuthModal();
   restorePotNotification();
 
   onAuthReady(async () => {
+    currentPlayerData = await loadPlayerData(getUserId());
+    renderPlayerStats(currentPlayerData);
+
     await loadSpecies();
     resetPotVisual();
-    await Promise.all([refreshInventory(), refreshTesters()]);
+    await Promise.all([refreshInventory(), refreshTesters(), refreshGarden()]);
 
     const pot = await loadActivePot(getUserId());
     if (pot) { activePot = pot; tickProgress(); }
