@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Botanica Obscura — Classement</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .leaderboard-container {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    .leaderboard-title {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+    }
+    #leaderboard-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    #leaderboard-table th,
+    #leaderboard-table td {
+      padding: 0.6rem 1rem;
+      text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    #leaderboard-table th {
+      opacity: 0.6;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .lb-name {
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .lb-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .lb-rank {
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    .lb-top {
+      background: rgba(255, 215, 0, 0.06);
+    }
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 2rem;
+      opacity: 0.6;
+      font-size: 0.9rem;
+    }
+    .back-link:hover { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div class="leaderboard-container">
+    <h1 class="leaderboard-title">🌿 Classement des Botanistes</h1>
+    <table id="leaderboard-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th style="text-align:left">Joueur</th>
+          <th>Codex</th>
+          <th>Niveau</th>
+          <th>XP</th>
+        </tr>
+      </thead>
+      <tbody id="lb-body">
+        <tr><td colspan="5" style="opacity:0.5;padding:2rem">Chargement…</td></tr>
+      </tbody>
+    </table>
+    <a class="back-link" href="index.html">← Retour au jardin</a>
+  </div>
+  <script type="module" src="leaderboard.js"></script>
+</body>
+</html>
