@@ -5,6 +5,7 @@ import { startMutationPot, loadActivePot, harvestMutation } from './lib/mutation
 import { loadInventory, renderInventory } from './lib/inventory.js';
 import { ensureTesters, renderTesters } from './lib/testers.js';
 import { requestNotifPermission, schedulePotNotification, cancelPotNotification, restorePotNotification } from './lib/notifications.js';
+import { renderMutationTree } from './lib/mutationTree.js';
 
 export const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
@@ -12,7 +13,6 @@ let userId = localStorage.getItem('botanica_user_id');
 if (!userId) { userId = crypto.randomUUID(); localStorage.setItem('botanica_user_id', userId); }
 export { userId };
 
-// DOM refs
 const speciesASelect  = document.getElementById('speciesA');
 const speciesBSelect  = document.getElementById('speciesB');
 const startMutationBtn = document.getElementById('startMutationBtn');
@@ -31,7 +31,6 @@ let progressInterval = null;
 let testers = [];
 let lastHarvestedSpecies = null;
 
-// ─── SPECIES ──────────────────────────────────────────────
 async function loadSpecies() {
   const { data, error } = await supabase
     .from('species').select('*')
@@ -39,6 +38,7 @@ async function loadSpecies() {
   speciesList = (!error && data?.length) ? data : getFallbackSpeciesTree();
   populateSpeciesSelects();
   renderCodex();
+  renderMutationTree(speciesList, renderPreview);
   renderPreview(speciesList[0]);
 }
 
@@ -78,27 +78,22 @@ function renderCodex() {
   });
 }
 
-// ─── INVENTORY ────────────────────────────────────────────
 async function refreshInventory() {
   const seeds = await loadInventory(userId);
   renderInventory(seeds, (speciesId) => {
-    // Quick-select into pot selects
     const optA = speciesASelect.querySelector(`option[value="${speciesId}"]`);
     const optB = speciesBSelect.querySelector(`option[value="${speciesId}"]`);
     if (optA) { speciesASelect.value = speciesId; renderPreview(getSelected(speciesASelect)); }
     else if (optB) { speciesBSelect.value = speciesId; }
-    // Scroll to pot
     document.querySelector('.panel')?.scrollIntoView({ behavior: 'smooth' });
   });
 }
 
-// ─── TESTERS ──────────────────────────────────────────────
 async function refreshTesters() {
   testers = await ensureTesters(userId);
   renderTesters(testers, lastHarvestedSpecies);
 }
 
-// ─── GROW ANIMATION ───────────────────────────────────────
 export function updateGrowAnimation(pot) {
   if (!pot) { resetPotVisual(); return; }
   const now = Date.now();
@@ -146,7 +141,6 @@ function resetPotVisual() {
   mutationStatus.textContent = 'Choisissez deux espèces mères pour lancer une mutation.';
 }
 
-// ─── MUTATION EVENTS ──────────────────────────────────────
 startMutationBtn.addEventListener('click', async () => {
   const aId = Number(speciesASelect.value);
   const bId = Number(speciesBSelect.value);
@@ -190,7 +184,6 @@ function tickProgress() {
   progressInterval = setInterval(() => updateGrowAnimation(activePot), 10000);
 }
 
-// ─── NOTIF BUTTON ─────────────────────────────────────────
 if (notifBtn) {
   notifBtn.addEventListener('click', async () => {
     const granted = await requestNotifPermission();
@@ -200,7 +193,6 @@ if (notifBtn) {
   });
 }
 
-// ─── INIT ─────────────────────────────────────────────────
 async function init() {
   restorePotNotification();
   await loadSpecies();

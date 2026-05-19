@@ -12,8 +12,6 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: Inter, system-ui, sans-serif; background: radial-gradient(ellipse at top, #1a2e1c 0%, var(--bg) 70%); color: var(--text); min-height: 100vh; }
-
-/* TOPBAR */
 .topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 28px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.25); backdrop-filter: blur(8px); position: sticky; top: 0; z-index: 10; gap: 12px; flex-wrap: wrap; }
 .topbar h1 { font-size: 1.4rem; }
 .subtitle { color: var(--muted); font-size: 0.82rem; margin-top: 3px; }
@@ -21,14 +19,10 @@ body { font-family: Inter, system-ui, sans-serif; background: radial-gradient(el
 .notif-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); font-size: 0.82rem; padding: 6px 12px; border-radius: 10px; cursor: pointer; }
 .notif-btn:hover { border-color: var(--accent); color: var(--accent); }
 .muted { color: var(--muted); font-size: 0.88rem; margin-bottom: 12px; }
-
-/* LAYOUT */
 .layout { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; padding: 24px; }
 .panel { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 20px; padding: 22px; box-shadow: 0 16px 40px rgba(0,0,0,0.25); }
 .panel h2 { margin-bottom: 10px; font-size: 1.05rem; }
 .full-width { grid-column: 1 / -1; }
-
-/* POT */
 .pot-card { display: flex; flex-direction: column; gap: 13px; }
 label { display: flex; flex-direction: column; gap: 5px; color: var(--muted); font-size: 0.88rem; }
 select { border-radius: 12px; border: 1px solid var(--border); padding: 10px 12px; background: #0a120b; color: var(--text); font-size: 0.93rem; }
@@ -38,8 +32,6 @@ button:hover { opacity: 0.9; } button:active { transform: scale(0.97); } button:
 .status { color: var(--muted); font-size: 0.88rem; min-height: 1.4em; }
 .progress-wrap { width: 100%; height: 11px; background: #0a120b; border-radius: 999px; overflow: hidden; border: 1px solid var(--border); }
 .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-2)); transition: width 1s ease; border-radius: 999px; }
-
-/* POT VISUAL */
 .pot-visual { display: flex; justify-content: center; min-height: 90px; }
 .pot-stage { display: flex; flex-direction: column; align-items: center; gap: 7px; padding: 14px 22px; border-radius: 16px; border: 2px solid var(--stage-color, #4a3728); background: color-mix(in srgb, var(--stage-color,#4a3728) 12%, transparent); transition: all 0.8s ease; position: relative; }
 .pot-emoji { font-size: 2.6rem; animation: bounce 2.2s infinite ease-in-out; }
@@ -49,13 +41,22 @@ button:hover { opacity: 0.9; } button:active { transform: scale(0.97); } button:
 .pot-label { font-size: 0.8rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
 .pot-ready-glow { position: absolute; inset: -4px; border-radius: 18px; border: 2px solid var(--gold); animation: pulse-glow 1.4s infinite ease-in-out; pointer-events: none; }
 @keyframes pulse-glow { 0%,100%{box-shadow:0 0 8px var(--gold),0 0 20px var(--gold);opacity:0.6} 50%{box-shadow:0 0 22px var(--gold),0 0 55px var(--gold);opacity:1} }
-
-/* PREVIEW */
 .plant-preview { display: flex; flex-direction: column; align-items: center; gap: 14px; }
 #plantCharacter svg { width: 150px; height: 170px; }
 #plantDescription { color: var(--muted); font-size: 0.88rem; text-align: center; }
-
-/* TESTERS */
+.mutation-tree-wrap { width: 100%; overflow-x: auto; overflow-y: hidden; border: 1px solid var(--border); border-radius: 18px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.08)); padding: 10px; }
+.mutation-tree-svg { width: 100%; min-width: 980px; height: auto; display: block; }
+.tree-tier-label { fill: var(--muted); font-size: 14px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.tree-link { fill: none; stroke: rgba(126, 200, 80, 0.35); stroke-width: 3; stroke-linecap: round; }
+.tree-node { cursor: pointer; }
+.tree-card-bg { fill: #0d160e; stroke: var(--border); stroke-width: 1.5; transition: all 0.2s ease; }
+.tree-node:hover .tree-card-bg { stroke: var(--accent); filter: url(#softGlow); }
+.tree-name { fill: var(--text); font-size: 13px; font-weight: 700; }
+.tree-meta { fill: var(--muted); font-size: 11px; }
+.tree-discovery { fill: var(--gold); font-size: 11px; font-weight: 700; }
+.tree-node.rarity-epic .tree-card-bg { stroke: #7a49d6; }
+.tree-node.rarity-legendary .tree-card-bg { stroke: #d9a520; }
+.tree-node.rarity-mythic .tree-card-bg { stroke: #e44a80; }
 .testers-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
 .tester-card { background: #0d160e; border: 1px solid var(--border); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative; transition: transform 0.2s; }
 .tester-card.tasting { animation: tasting-shake 0.4s ease; }
@@ -69,8 +70,6 @@ button:hover { opacity: 0.9; } button:active { transform: scale(0.97); } button:
 .taste-hint { font-size: 0.78rem; color: var(--muted); text-align: center; }
 .reaction-bubble { position: absolute; top: -38px; left: 50%; transform: translateX(-50%); background: #1e301f; border: 1px solid var(--border); border-radius: 12px; padding: 6px 12px; font-size: 0.82rem; white-space: nowrap; animation: bubble-pop 2.5s ease forwards; pointer-events: none; z-index: 5; }
 @keyframes bubble-pop { 0%{opacity:0;transform:translateX(-50%) translateY(6px)} 15%{opacity:1;transform:translateX(-50%) translateY(0)} 80%{opacity:1} 100%{opacity:0;transform:translateX(-50%) translateY(-10px)} }
-
-/* INVENTORY */
 .inventory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
 .inv-card { background: #0d160e; border: 1px solid var(--border); border-radius: 16px; padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 8px; transition: transform 0.15s; }
 .inv-card:hover { transform: translateY(-2px); }
@@ -83,8 +82,6 @@ button:hover { opacity: 0.9; } button:active { transform: scale(0.97); } button:
 .inv-meta { font-size: 0.8rem; color: var(--muted); margin: 3px 0; }
 .inv-qty { font-size: 1.1rem; font-weight: 700; color: var(--accent); }
 .inv-select-btn { font-size: 0.8rem; padding: 6px 12px; border-radius: 10px; width: 100%; }
-
-/* CODEX */
 .codex-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 14px; }
 .codex-card { background: #0d160e; border: 1px solid var(--border); border-radius: 16px; padding: 14px; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
 .codex-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
@@ -96,5 +93,4 @@ button:hover { opacity: 0.9; } button:active { transform: scale(0.97); } button:
 .rarity-badge.common { color: #aaa; } .rarity-badge.rare { color: var(--accent-2); } .rarity-badge.epic { color: #c080ff; } .rarity-badge.legendary { color: var(--gold); } .rarity-badge.mythic { color: #ff6090; }
 .codex-card.rarity-epic { border-color: #6030a0; } .codex-card.rarity-legendary { border-color: #c0900a; } .codex-card.rarity-mythic { border-color: #c02060; box-shadow: 0 0 12px rgba(255,60,120,0.3); }
 .first-discovery { font-size: 0.8rem; font-weight: 700; color: var(--gold); margin-top: 6px; }
-
-@media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .mutation-tree-svg { min-width: 860px; } }

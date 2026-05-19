@@ -21,8 +21,6 @@
     </header>
 
     <main class="layout">
-
-      <!-- POT DE MUTATION -->
       <section class="panel">
         <h2>🧪 Pot de mutation</h2>
         <div class="pot-card">
@@ -40,7 +38,6 @@
         </div>
       </section>
 
-      <!-- PREVIEW -->
       <section class="panel">
         <h2>🔍 Prévisualisation</h2>
         <div class="plant-preview">
@@ -49,14 +46,18 @@
         </div>
       </section>
 
-      <!-- TESTEURS -->
+      <section class="panel full-width">
+        <h2>🗺️ Arbre des mutations</h2>
+        <p class="muted">Clique sur une espèce pour la prévisualiser et suivre ses branches de mutation.</p>
+        <div id="mutationTree" class="mutation-tree-wrap"></div>
+      </section>
+
       <section class="panel full-width">
         <h2>🧑‍🌾 Testeurs</h2>
         <p class="muted">Récoltez une plante puis faites-la goûter à vos testeurs !</p>
         <div id="testersContainer" class="testers-grid"></div>
       </section>
 
-      <!-- INVENTAIRE -->
       <section class="panel full-width">
         <h2>🎒 Inventaire des graines</h2>
         <p class="muted">Cliquez sur "Utiliser" pour sélectionner une graine dans le pot de mutation.</p>
@@ -64,13 +65,11 @@
         <div id="inventoryGrid" class="inventory-grid"></div>
       </section>
 
-      <!-- CODEX -->
       <section class="panel full-width">
         <h2>📖 Codex botanique global</h2>
         <p class="muted">Soyez le premier à découvrir une espèce sur le serveur !</p>
         <div id="codexGrid" class="codex-grid"></div>
       </section>
-
     </main>
     <script type="module" src="app.js"></script>
   </body>
