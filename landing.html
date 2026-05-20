@@ -423,7 +423,7 @@
     </section>
 
     <script type="module">
-      import { supabase } from './lib/supabase.js';
+      import { supabase, restoreStarSession } from './lib/supabaseClient.js';
 
       const $ = id => document.getElementById(id);
       const show = id => { const e=$(id); if(e) e.style.display=''; };
@@ -432,6 +432,7 @@
       const fmt  = n => (n??0).toLocaleString('fr-FR');
 
       async function init() {
+        await restoreStarSession();
         const { data: { user } } = await supabase.auth.getUser();
         hide('save-loading');
 
