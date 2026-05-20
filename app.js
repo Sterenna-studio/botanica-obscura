@@ -1,4 +1,4 @@
-import { SUPABASE_URL, SUPABASE_ANON } from '../config.js';
+import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from '../config.js';
 import { supabase } from './lib/supabaseClient.js';
 import { createPlantCharacterSvg } from './lib/plantSvg.js';
 import { getFallbackSpeciesTree } from './lib/speciesTree.js';
@@ -14,6 +14,7 @@ import { QUALITY_TIERS } from './lib/quality.js';
 import { initMysterySeed } from './lib/mysterySeed.js';
 import { addXpToPlayer, computeHarvestXp } from './lib/xp.js';
 import { initPots, updatePotsSpecies, updatePotsPlayerData } from './lib/pots.js';
+import { initOnboarding } from './lib/onboarding.js';
 
 export { supabase };
 export function getUserId() { return getBotanicaUserId(); }
@@ -227,6 +228,11 @@ async function init() {
 
     // Init multi-pots
     await initPots(speciesList, currentPlayerData, onHarvest);
+
+    // Onboarding — graines de départ + tuto (seulement si nouveau joueur)
+    await initOnboarding(getUserId(), async () => {
+      await refreshInventory();
+    });
 
     initMysterySeed(refreshInventory);
   });

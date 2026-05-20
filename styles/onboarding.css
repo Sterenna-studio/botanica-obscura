@@ -1,0 +1,108 @@
+/* ── Onboarding overlay ─────────────────────────────────────────────── */
+.onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 20, 10, 0.82);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: onboarding-fade-in 0.3s ease;
+}
+
+@keyframes onboarding-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.onboarding-card {
+  background: linear-gradient(145deg, #1a2e1a, #0f1f0f);
+  border: 1px solid #3a5c3a;
+  border-radius: 18px;
+  padding: 2.4rem 2.8rem;
+  max-width: 440px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px #2a4a2a;
+  animation: onboarding-card-in 0.35s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+@keyframes onboarding-card-in {
+  from { transform: scale(0.85) translateY(20px); opacity: 0; }
+  to   { transform: scale(1) translateY(0);       opacity: 1; }
+}
+
+.onboarding-emoji {
+  font-size: 3.2rem;
+  margin-bottom: 0.6rem;
+}
+
+.onboarding-step-indicator {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 1rem;
+}
+
+.onboarding-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3a5c3a;
+  transition: background 0.2s;
+}
+
+.onboarding-dot.active {
+  background: #6fcf6f;
+}
+
+.onboarding-title {
+  color: #a8e6a8;
+  font-size: 1.25rem;
+  margin-bottom: 0.8rem;
+  font-weight: 700;
+}
+
+.onboarding-text {
+  color: #c8d8c8;
+  font-size: 0.97rem;
+  line-height: 1.6;
+  margin-bottom: 1.6rem;
+}
+
+.onboarding-text strong {
+  color: #8ddf8d;
+}
+
+.onboarding-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.8rem;
+}
+
+.onboarding-btn {
+  padding: 0.6rem 1.6rem;
+  border-radius: 30px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: transform 0.15s, opacity 0.15s;
+}
+
+.onboarding-btn:hover {
+  transform: translateY(-2px);
+  opacity: 0.92;
+}
+
+.onboarding-btn.primary {
+  background: #4caf50;
+  color: #fff;
+}
+
+.onboarding-btn.secondary {
+  background: #2a3e2a;
+  color: #a8d8a8;
+  border: 1px solid #3a5c3a;
+}
