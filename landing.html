@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Botanica Obscura — Présentation</title>
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@300;400;700&display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@300;400;700&family=Share+Tech+Mono&display=swap');
 
       :root {
         --green-dark: #1a2e1a;
@@ -46,39 +46,26 @@
       .hero::before {
         content: '🌿🍃🌱🌿🍃🌱🌿🍃🌱🌿🍃🌱🌿🍃';
         position: absolute;
-        top: 1rem;
-        left: 0;
-        width: 100%;
-        font-size: 1.5rem;
-        opacity: 0.08;
-        letter-spacing: 1.5rem;
-        white-space: nowrap;
-        overflow: hidden;
+        top: 1rem; left: 0; width: 100%;
+        font-size: 1.5rem; opacity: 0.08;
+        letter-spacing: 1.5rem; white-space: nowrap; overflow: hidden;
       }
-
       .hero::after {
         content: '🌿🍃🌱🌿🍃🌱🌿🍃🌱🌿🍃🌱🌿🍃';
         position: absolute;
-        bottom: 1rem;
-        left: 0;
-        width: 100%;
-        font-size: 1.5rem;
-        opacity: 0.08;
-        letter-spacing: 1.5rem;
-        white-space: nowrap;
-        overflow: hidden;
+        bottom: 1rem; left: 0; width: 100%;
+        font-size: 1.5rem; opacity: 0.08;
+        letter-spacing: 1.5rem; white-space: nowrap; overflow: hidden;
       }
 
       .hero-emblem {
-        font-size: 5rem;
-        margin-bottom: 1.5rem;
+        font-size: 5rem; margin-bottom: 1.5rem;
         filter: drop-shadow(0 0 30px rgba(74,158,63,0.6));
         animation: float 4s ease-in-out infinite;
       }
-
       @keyframes float {
         0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-12px); }
+        50%       { transform: translateY(-12px); }
       }
 
       .hero h1 {
@@ -86,46 +73,135 @@
         font-size: clamp(2.5rem, 6vw, 5rem);
         color: var(--gold-light);
         text-shadow: 0 0 40px rgba(201,168,76,0.5), 0 2px 4px rgba(0,0,0,0.8);
-        letter-spacing: 0.05em;
-        margin-bottom: 0.5rem;
+        letter-spacing: 0.05em; margin-bottom: 0.5rem;
       }
-
       .hero .tagline {
         font-size: clamp(0.9rem, 2vw, 1.2rem);
         color: var(--green-light);
-        letter-spacing: 0.2em;
-        text-transform: uppercase;
-        margin-bottom: 2rem;
-        font-weight: 300;
+        letter-spacing: 0.2em; text-transform: uppercase;
+        margin-bottom: 2rem; font-weight: 300;
       }
-
       .hero .description {
-        max-width: 600px;
-        font-size: 1.1rem;
-        line-height: 1.8;
-        color: #c8d8c0;
-        margin-bottom: 3rem;
+        max-width: 600px; font-size: 1.1rem;
+        line-height: 1.8; color: #c8d8c0; margin-bottom: 3rem;
       }
-
       .btn-primary {
         display: inline-block;
         padding: 1rem 2.5rem;
         background: linear-gradient(135deg, var(--green-mid), var(--green-light));
-        color: var(--cream);
-        text-decoration: none;
-        font-family: 'Cinzel', serif;
-        font-size: 1.1rem;
-        border-radius: 4px;
-        border: 1px solid var(--green-light);
+        color: var(--cream); text-decoration: none;
+        font-family: 'Cinzel', serif; font-size: 1.1rem;
+        border-radius: 4px; border: 1px solid var(--green-light);
         box-shadow: 0 4px 20px rgba(74,158,63,0.4);
-        transition: all 0.3s ease;
-        letter-spacing: 0.05em;
+        transition: all 0.3s ease; letter-spacing: 0.05em;
       }
-
       .btn-primary:hover {
         background: linear-gradient(135deg, var(--green-light), #5dbf50);
         box-shadow: 0 6px 30px rgba(74,158,63,0.7);
         transform: translateY(-2px);
+      }
+
+      /* ────────────────────────────────────
+         SAVE PREVIEW
+      ──────────────────────────────────── */
+      .save-section {
+        padding: 3rem 2rem;
+        background: linear-gradient(180deg, #0d1a0d, #111e11);
+        display: flex; flex-direction: column; align-items: center;
+        gap: 20px;
+      }
+      .save-section-title {
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 9px; letter-spacing: .28em;
+        color: rgba(74,158,63,.5); text-align: center;
+      }
+      .save-loading {
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 10px; letter-spacing: .2em;
+        color: rgba(168,230,168,.35);
+        animation: pulse-anim 1.5s infinite;
+      }
+      @keyframes pulse-anim {
+        0%,100% { opacity:1; } 50% { opacity:.3; }
+      }
+      .save-no-auth {
+        background: rgba(74,158,63,.05);
+        border: 1px solid rgba(74,158,63,.2);
+        border-radius: 14px; padding: 24px 28px;
+        text-align: center; max-width: 380px; width: 100%;
+      }
+      .save-no-auth .lock { font-size: 30px; margin-bottom: 10px; }
+      .save-no-auth p {
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 10px; line-height: 1.7;
+        color: rgba(168,230,168,.6); margin-bottom: 14px; letter-spacing:.06em;
+      }
+      .btn-login {
+        display: inline-block;
+        background: #2e7d32; color: #a8e6a8;
+        border: 1px solid rgba(74,158,63,.5); border-radius: 30px;
+        padding: 8px 24px; font-family: 'Share Tech Mono', monospace;
+        font-size: 10px; letter-spacing: .12em;
+        text-decoration: none; transition: box-shadow .2s;
+      }
+      .btn-login:hover { box-shadow: 0 0 18px rgba(74,158,63,.4); }
+
+      .save-card {
+        width: 100%; max-width: 480px;
+        display: flex; flex-direction: column; gap: 12px;
+      }
+      .player-badge {
+        display: flex; align-items: center; gap: 14px;
+        background: rgba(0,20,0,.7);
+        border: 1px solid rgba(74,158,63,.25);
+        border-radius: 14px; padding: 14px 18px;
+      }
+      .player-avatar {
+        width: 44px; height: 44px; border-radius: 50%;
+        border: 2px solid #4a9e3f; object-fit: cover; flex-shrink: 0;
+      }
+      .player-avatar-ph {
+        width: 44px; height: 44px; border-radius: 50%;
+        background: rgba(74,158,63,.15);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 20px; flex-shrink: 0;
+      }
+      .player-name {
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 13px; color: #a8e6a8; letter-spacing: .1em;
+      }
+      .player-sub {
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 9px; color: rgba(168,230,168,.4);
+        letter-spacing: .12em; margin-top: 3px;
+      }
+      .player-coins {
+        margin-left: auto; font-family: 'Share Tech Mono', monospace;
+        font-size: 12px; color: #f9ca24; white-space: nowrap;
+      }
+      .stat-grid {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+      }
+      .stat-card {
+        background: rgba(0,15,0,.8);
+        border: 1px solid rgba(74,158,63,.15);
+        border-radius: 12px; padding: 14px 16px;
+        transition: border-color .2s, transform .2s;
+      }
+      .stat-card:hover { border-color: #4a9e3f; transform: translateY(-2px); }
+      .stat-icon { font-size: 20px; margin-bottom: 5px; }
+      .stat-lbl {
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 8px; letter-spacing: .22em;
+        color: rgba(168,230,168,.4); margin-bottom: 3px;
+      }
+      .stat-val {
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 18px; color: #a8e6a8;
+      }
+      .stat-sub {
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 8px; color: rgba(168,230,168,.3); margin-top: 2px;
       }
 
       /* FEATURES */
@@ -134,156 +210,80 @@
         background: linear-gradient(180deg, #0d1a0d, #111e11);
         text-align: center;
       }
-
       .features h2 {
-        font-family: 'Cinzel', serif;
-        font-size: 2rem;
-        color: var(--gold);
-        margin-bottom: 3rem;
-        position: relative;
-        display: inline-block;
+        font-family: 'Cinzel', serif; font-size: 2rem; color: var(--gold);
+        margin-bottom: 3rem; position: relative; display: inline-block;
       }
-
       .features h2::after {
-        content: '';
-        display: block;
-        width: 60%;
-        height: 2px;
+        content: ''; display: block; width: 60%; height: 2px;
         background: linear-gradient(90deg, transparent, var(--gold), transparent);
         margin: 0.5rem auto 0;
       }
-
       .features-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 2rem;
-        max-width: 1000px;
-        margin: 0 auto;
+        gap: 2rem; max-width: 1000px; margin: 0 auto;
       }
-
       .feature-card {
         background: rgba(255,255,255,0.03);
         border: 1px solid rgba(74,158,63,0.2);
-        border-radius: 8px;
-        padding: 2rem 1.5rem;
+        border-radius: 8px; padding: 2rem 1.5rem;
         transition: all 0.3s ease;
       }
-
       .feature-card:hover {
         border-color: var(--green-light);
-        background: rgba(74,158,63,0.07);
-        transform: translateY(-4px);
+        background: rgba(74,158,63,0.07); transform: translateY(-4px);
       }
-
       .feature-card .icon { font-size: 2.5rem; margin-bottom: 1rem; }
-
       .feature-card h3 {
-        font-family: 'Cinzel', serif;
-        font-size: 1rem;
-        color: var(--gold-light);
-        margin-bottom: 0.75rem;
-        letter-spacing: 0.05em;
+        font-family: 'Cinzel', serif; font-size: 1rem;
+        color: var(--gold-light); margin-bottom: 0.75rem; letter-spacing: 0.05em;
       }
-
-      .feature-card p {
-        font-size: 0.9rem;
-        line-height: 1.7;
-        color: #9ab89a;
-      }
+      .feature-card p { font-size: 0.9rem; line-height: 1.7; color: #9ab89a; }
 
       /* HOW TO PLAY */
-      .howto {
-        padding: 5rem 2rem;
-        background: #0d1a0d;
-        text-align: center;
-      }
-
+      .howto { padding: 5rem 2rem; background: #0d1a0d; text-align: center; }
       .howto h2 {
-        font-family: 'Cinzel', serif;
-        font-size: 2rem;
-        color: var(--gold);
-        margin-bottom: 3rem;
-        position: relative;
-        display: inline-block;
+        font-family: 'Cinzel', serif; font-size: 2rem; color: var(--gold);
+        margin-bottom: 3rem; position: relative; display: inline-block;
       }
-
       .howto h2::after {
-        content: '';
-        display: block;
-        width: 60%;
-        height: 2px;
+        content: ''; display: block; width: 60%; height: 2px;
         background: linear-gradient(90deg, transparent, var(--gold), transparent);
         margin: 0.5rem auto 0;
       }
-
       .steps {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 1.5rem;
-        max-width: 900px;
-        margin: 0 auto 3rem;
+        display: flex; flex-wrap: wrap; justify-content: center;
+        gap: 1.5rem; max-width: 900px; margin: 0 auto 3rem;
       }
-
       .step {
-        display: flex;
-        align-items: flex-start;
-        gap: 1rem;
-        text-align: left;
-        max-width: 380px;
+        display: flex; align-items: flex-start; gap: 1rem;
+        text-align: left; max-width: 380px;
         background: rgba(255,255,255,0.02);
         border: 1px solid rgba(201,168,76,0.15);
-        border-radius: 8px;
-        padding: 1.5rem;
+        border-radius: 8px; padding: 1.5rem;
       }
-
       .step-num {
-        font-family: 'Cinzel', serif;
-        font-size: 1.8rem;
-        color: var(--gold);
-        opacity: 0.5;
-        line-height: 1;
-        min-width: 2rem;
+        font-family: 'Cinzel', serif; font-size: 1.8rem;
+        color: var(--gold); opacity: 0.5; line-height: 1; min-width: 2rem;
       }
-
-      .step h4 {
-        font-size: 0.95rem;
-        color: var(--cream);
-        margin-bottom: 0.3rem;
-        font-weight: 700;
-      }
-
-      .step p {
-        font-size: 0.85rem;
-        color: #8aaa8a;
-        line-height: 1.6;
-      }
+      .step h4 { font-size: 0.95rem; color: var(--cream); margin-bottom: 0.3rem; font-weight: 700; }
+      .step p  { font-size: 0.85rem; color: #8aaa8a; line-height: 1.6; }
 
       /* CTA FOOTER */
       .cta-footer {
-        padding: 4rem 2rem;
-        text-align: center;
+        padding: 4rem 2rem; text-align: center;
         background: linear-gradient(180deg, #111e11, #1a2e1a);
         border-top: 1px solid rgba(74,158,63,0.2);
       }
-
-      .cta-footer p {
-        color: #9ab89a;
-        font-size: 1rem;
-        margin-bottom: 1.5rem;
-      }
-
+      .cta-footer p { color: #9ab89a; font-size: 1rem; margin-bottom: 1.5rem; }
       .badge {
         display: inline-block;
         background: rgba(201,168,76,0.1);
         border: 1px solid rgba(201,168,76,0.3);
-        color: var(--gold);
-        font-size: 0.75rem;
-        padding: 0.3rem 0.8rem;
-        border-radius: 20px;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        margin-bottom: 1.5rem;
+        color: var(--gold); font-size: 0.75rem;
+        padding: 0.3rem 0.8rem; border-radius: 20px;
+        letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 1.5rem;
       }
     </style>
   </head>
@@ -300,6 +300,56 @@
         botanique vivant partagé entre tous les joueurs.
       </p>
       <a href="index.html" class="btn-primary">🧪 Entrer dans le laboratoire</a>
+    </section>
+
+    <!-- SAVE PREVIEW -->
+    <section class="save-section">
+      <div class="save-section-title">// TA PROGRESSION · SAVE EN COURS</div>
+
+      <div class="save-loading" id="save-loading">CHARGEMENT…</div>
+
+      <div class="save-no-auth" id="save-no-auth" style="display:none">
+        <div class="lock">🔒</div>
+        <p>Connecte-toi sur Gwen Ha Star<br>pour voir ta progression Botanica.</p>
+        <a href="/login.html" class="btn-login">🔑 SE CONNECTER</a>
+      </div>
+
+      <div class="save-card" id="save-card" style="display:none">
+        <div class="player-badge">
+          <div id="player-avatar" class="player-avatar-ph">🌿</div>
+          <div style="flex:1">
+            <div class="player-name" id="player-name">···</div>
+            <div class="player-sub"  id="player-sub">BOTANISTE · NIVEAU ·</div>
+          </div>
+          <div class="player-coins" id="player-coins">🪙 ···</div>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-icon">⭐</div>
+            <div class="stat-lbl">NIVEAU</div>
+            <div class="stat-val" id="stat-level">·</div>
+            <div class="stat-sub" id="stat-xp">· XP</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🪙</div>
+            <div class="stat-lbl">PIÈCES</div>
+            <div class="stat-val" id="stat-coins">·</div>
+            <div class="stat-sub">coins</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📖</div>
+            <div class="stat-lbl">CODEX</div>
+            <div class="stat-val" id="stat-codex">·</div>
+            <div class="stat-sub">espèces découvertes</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🧪</div>
+            <div class="stat-lbl">MUTATIONS</div>
+            <div class="stat-val" id="stat-mutations">·</div>
+            <div class="stat-sub">complétées</div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- FEATURES -->
@@ -371,6 +421,62 @@
       <p>Botanica Obscura évolue en continu. Nouvelles espèces, mécaniques et surprises à venir.</p>
       <a href="index.html" class="btn-primary">Accéder au jeu →</a>
     </section>
+
+    <script type="module">
+      import { supabase } from './lib/supabase.js';
+
+      const $ = id => document.getElementById(id);
+      const show = id => { const e=$(id); if(e) e.style.display=''; };
+      const hide = id => { const e=$(id); if(e) e.style.display='none'; };
+      const set  = (id,v) => { const e=$(id); if(e) e.textContent=v; };
+      const fmt  = n => (n??0).toLocaleString('fr-FR');
+
+      async function init() {
+        const { data: { user } } = await supabase.auth.getUser();
+        hide('save-loading');
+
+        if (!user) { show('save-no-auth'); return; }
+
+        const meta     = user.user_metadata;
+        const username = meta?.username ?? meta?.full_name ?? user.email?.split('@')[0] ?? 'BOTANISTE';
+
+        const [pdRes, codexRes, mutRes] = await Promise.all([
+          supabase.from('botanica_player_data')
+            .select('coins,level,xp').eq('user_id', user.id).maybeSingle(),
+          supabase.from('player_codex')
+            .select('species_id', { count:'exact', head:true }).eq('user_id', user.id),
+          supabase.from('pot_mutations')
+            .select('id', { count:'exact', head:true })
+            .eq('user_id', user.id).eq('status','completed'),
+        ]);
+
+        const pd    = pdRes.data;
+        const coins = pd?.coins ?? 0;
+        const level = pd?.level ?? 1;
+        const xp    = pd?.xp    ?? 0;
+        const codex = codexRes.count ?? 0;
+        const muts  = mutRes.count   ?? 0;
+
+        if (meta?.avatar_url) {
+          const img = document.createElement('img');
+          img.src = meta.avatar_url; img.alt = 'avatar'; img.className = 'player-avatar';
+          $('player-avatar').replaceWith(img);
+        }
+
+        set('player-name',    username.toUpperCase());
+        set('player-sub',     `BOTANISTE · NIVEAU ${level}`);
+        set('player-coins',   `🪙 ${fmt(coins)}`);
+        set('stat-level',     level);
+        set('stat-xp',        `${fmt(xp)} XP`);
+        set('stat-coins',     fmt(coins));
+        set('stat-codex',     codex);
+        set('stat-mutations', muts);
+
+        show('save-card');
+      }
+
+      init().catch(console.error);
+    </script>
 
   </body>
 </html>
