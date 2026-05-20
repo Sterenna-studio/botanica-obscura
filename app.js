@@ -1,4 +1,3 @@
-import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from '../config.js';
 import { supabase } from './lib/supabaseClient.js';
 import { createPlantCharacterSvg } from './lib/plantSvg.js';
 import { getFallbackSpeciesTree } from './lib/speciesTree.js';
@@ -31,7 +30,6 @@ let lastHarvestedSp   = null;
 let currentGarden     = {};
 let currentPlayerData = { coins: 0, level: 1, xp: 0, pot_slots: 1 };
 
-// Expose les IDs du codex pour lib/pots.js (filtrage des espèces débloquées)
 window.__botanicaCodexIds = playerCodexIds;
 
 // ── Level-up overlay ─────────────────────────────────────────────────────
@@ -62,7 +60,7 @@ async function loadSpecies() {
     .eq('user_id', userId);
 
   playerCodexIds = new Set((codexData ?? []).map(r => r.species_id));
-  window.__botanicaCodexIds = playerCodexIds; // mise à jour de l'exposé global
+  window.__botanicaCodexIds = playerCodexIds;
 
   speciesList = (!globalErr && globalData?.length)
     ? globalData
@@ -76,8 +74,8 @@ async function loadSpecies() {
 
 function renderPreview(species) {
   if (!species) return;
-  plantCharacter.innerHTML     = createPlantCharacterSvg(species);
-  plantDesc.textContent        = species.description || 'Aucune description.';
+  plantCharacter.innerHTML = createPlantCharacterSvg(species);
+  plantDesc.textContent    = species.description || 'Aucune description.';
 }
 
 // ── Codex ─────────────────────────────────────────────────────────────────
@@ -152,11 +150,10 @@ async function onBuyGardenEffect(effectId) {
   renderGarden(currentGarden, currentPlayerData.coins, onBuyGardenEffect);
 }
 
-// ── Callback harvest (depuis lib/pots.js) ─────────────────────────────────
+// ── Callback harvest ─────────────────────────────────────────────────────
 async function onHarvest(harvestResult, xpResult) {
   lastHarvestedSp = harvestResult.result_species;
 
-  // Mise à jour playerData local
   currentPlayerData = {
     ...currentPlayerData,
     xp:        xpResult.newXp,
@@ -167,32 +164,30 @@ async function onHarvest(harvestResult, xpResult) {
   renderPlayerStats(currentPlayerData);
   updatePotsPlayerData(currentPlayerData);
 
-  // Toast XP
   const xpGained = computeHarvestXp(
     lastHarvestedSp?.rarity ?? 'common',
     harvestResult.quality_tier_id ?? 1
   );
-  const quality = QUALITY_TIERS.find(t => t.id === harvestResult.quality_tier_id) ?? QUALITY_TIERS[1];
+  const quality  = QUALITY_TIERS.find(t => t.id === harvestResult.quality_tier_id) ?? QUALITY_TIERS[1];
   const firstMsg = harvestResult.first_server_discovery ? ' 🏅 PREMIÈRE MONDIALE !' : '';
 
   let tc = document.getElementById('toast-container');
   if (!tc) { tc = document.createElement('div'); tc.id = 'toast-container'; document.body.appendChild(tc); }
 
   const toastHarvest = document.createElement('div');
-  toastHarvest.className = 'toast toast-success toast-visible';
+  toastHarvest.className   = 'toast toast-success toast-visible';
   toastHarvest.textContent = `🌺 ${lastHarvestedSp?.name} (${lastHarvestedSp?.rarity}) — ${quality.label}${firstMsg}`;
   tc.appendChild(toastHarvest);
   setTimeout(() => { toastHarvest.classList.remove('toast-visible'); toastHarvest.addEventListener('transitionend', () => toastHarvest.remove(), { once: true }); }, 3500);
 
   const toastXp = document.createElement('div');
-  toastXp.className = 'toast toast-xp toast-visible';
+  toastXp.className   = 'toast toast-xp toast-visible';
   toastXp.textContent = `+${xpGained} XP`;
   tc.appendChild(toastXp);
   setTimeout(() => { toastXp.classList.remove('toast-visible'); toastXp.addEventListener('transitionend', () => toastXp.remove(), { once: true }); }, 2000);
 
   if (xpResult.leveledUp) showLevelUpOverlay(xpResult.newLevel, xpResult.reward);
 
-  // Refresh codex, inventaire, testeurs
   await Promise.all([loadSpecies(), refreshInventory(), refreshTesters()]);
   renderGarden(currentGarden, currentPlayerData.coins, onBuyGardenEffect);
 }
@@ -214,8 +209,6 @@ async function init() {
   onAuthReady(async () => {
     currentPlayerData = await loadPlayerData(getUserId());
     renderPlayerStats(currentPlayerData);
-
-    // Injecte user_id dans playerData pour lib/pots.js
     currentPlayerData.user_id = getUserId();
 
     await loadSpecies();
@@ -226,10 +219,8 @@ async function init() {
       refreshGarden(),
     ]);
 
-    // Init multi-pots
     await initPots(speciesList, currentPlayerData, onHarvest);
 
-    // Onboarding — graines de départ + tuto (seulement si nouveau joueur)
     await initOnboarding(getUserId(), async () => {
       await refreshInventory();
     });
