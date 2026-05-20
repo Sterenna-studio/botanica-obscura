@@ -1,10 +1,8 @@
-import { SUPABASE_URL, SUPABASE_ANON } from '../config.js';
+import { supabase, restoreStarSession } from './lib/supabaseClient.js';
 import { onAuthReady, getBotanicaUserId } from './lib/auth.js';
 import { createPlantCharacterSvg } from './lib/plantSvg.js';
 import { getFallbackSpeciesTree } from './lib/speciesTree.js';
 import { QUALITY_TIERS } from './lib/quality.js';
-
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 const TOTAL_SPECIES = 32;
 
@@ -137,11 +135,16 @@ function renderSales(sales, speciesList) {
   }).join('');
 }
 
-onAuthReady(() => {
-  const userId = getBotanicaUserId();
-  if (!userId) {
-    document.getElementById('profil-name').textContent = 'Connectez-vous pour voir votre profil';
-    return;
-  }
-  loadProfile(userId);
-});
+async function init() {
+  await restoreStarSession();
+  onAuthReady(() => {
+    const userId = getBotanicaUserId();
+    if (!userId) {
+      document.getElementById('profil-name').textContent = 'Connectez-vous pour voir votre profil';
+      return;
+    }
+    loadProfile(userId);
+  });
+}
+
+init();
