@@ -1,4 +1,4 @@
-import { supabase } from './lib/supabaseClient.js';
+import { supabase, restoreStarSession } from './lib/supabaseClient.js';
 import { createPlantCharacterSvg } from './lib/plantSvg.js';
 import { getFallbackSpeciesTree } from './lib/speciesTree.js';
 import { renderMutationTree } from './lib/mutationTree.js';
@@ -205,6 +205,9 @@ if (notifBtn) {
 async function init() {
   initAuthModal();
   restorePotNotification();
+
+  // SSO transparent : restaure la session Gwen Ha Star si déjà connecté
+  await restoreStarSession();
 
   onAuthReady(async () => {
     currentPlayerData = await loadPlayerData(getUserId());
