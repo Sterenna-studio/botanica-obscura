@@ -13,6 +13,7 @@ import { loadGarden, renderGarden, buyGardenEffect } from './lib/garden.js';
 import { loadPlayerData, renderPlayerStats } from './lib/playerData.js';
 import { QUALITY_TIERS } from './lib/quality.js';
 import { initMysterySeed } from './lib/mysterySeed.js';
+import { addXpToPlayer, computeHarvestXp } from './lib/xp.js';
 
 export { supabase };
 export function getUserId() { return getBotanicaUserId(); }
@@ -37,6 +38,21 @@ let testers              = [];
 let lastHarvestedSpecies = null;
 let currentGarden        = {};
 let currentPlayerData    = { coins: 0, level: 1, xp: 0 };
+
+// ── Level-up overlay ─────────────────────────────────────────────────────
+function showLevelUpOverlay(newLevel, reward) {
+  const overlay   = document.getElementById('levelup-overlay');
+  const levelEl   = document.getElementById('levelup-level');
+  const rewardEl  = document.getElementById('levelup-reward');
+  const closeBtn  = document.getElementById('levelup-close');
+  if (!overlay) return;
+
+  levelEl.textContent  = `Niveau ${newLevel}`;
+  rewardEl.textContent = reward?.label ?? '';
+  overlay.style.display = 'flex';
+
+  closeBtn.onclick = () => { overlay.style.display = 'none'; };
+}
 
 // ── Espèces ──────────────────────────────────────────────────────────────
 async function loadSpecies() {
@@ -257,11 +273,32 @@ harvestBtn.addEventListener('click', async () => {
   cancelPotNotification();
   clearInterval(progressInterval);
 
+  // ── XP & level-up ──────────────────────────────────────────────────
+  const xpGained = computeHarvestXp(lastHarvestedSpecies.rarity, result.quality_tier_id ?? 1);
+  const xpResult = await addXpToPlayer(getUserId(), xpGained, currentPlayerData);
+
+  currentPlayerData = {
+    ...currentPlayerData,
+    xp:     xpResult.newXp,
+    level:  xpResult.newLevel,
+    coins:  xpResult.newCoins,
+  };
+  renderPlayerStats(currentPlayerData);
+
+  // Toast XP
+  const toastXp = document.createElement('div');
+  toastXp.className = 'toast toast-xp toast-visible';
+  toastXp.textContent = `+${xpGained} XP`;
+  let tc = document.getElementById('toast-container');
+  if (!tc) { tc = document.createElement('div'); tc.id = 'toast-container'; document.body.appendChild(tc); }
+  tc.appendChild(toastXp);
+  setTimeout(() => { toastXp.classList.remove('toast-visible'); toastXp.addEventListener('transitionend', () => toastXp.remove(), { once: true }); }, 2000);
+
+  if (xpResult.leveledUp) showLevelUpOverlay(xpResult.newLevel, xpResult.reward);
+  // ───────────────────────────────────────────────────────────────────
+
   await Promise.all([loadSpecies(), refreshInventory(), refreshTesters()]);
   resetPotVisual();
-
-  currentPlayerData = await loadPlayerData(getUserId());
-  renderPlayerStats(currentPlayerData);
   renderGarden(currentGarden, currentPlayerData.coins, onBuyGardenEffect);
 });
 

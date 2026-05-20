@@ -1,0 +1,118 @@
+/* styles/xp.css — Barre XP, level-up overlay */
+
+/* ── Bloc niveau dans le header ─────────────────────────────────────── */
+.level-xp-block {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+}
+
+#level {
+  font-weight: 700;
+  font-size: .95rem;
+  color: #a8e06a;
+  white-space: nowrap;
+}
+
+.xp-bar-wrap {
+  width: 90px;
+  height: 8px;
+  background: rgba(255,255,255,.12);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.xp-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6fcf3a, #b8f06a);
+  border-radius: 4px;
+  transition: width .6s ease;
+}
+
+.xp-text {
+  font-size: .72rem;
+  opacity: .65;
+  white-space: nowrap;
+}
+
+/* ── Overlay level-up ───────────────────────────────────────────────── */
+.levelup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.75);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeInOverlay .25s ease;
+}
+
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.levelup-card {
+  background: linear-gradient(145deg, #1a2e14, #0f1f0a);
+  border: 2px solid #6fcf3a;
+  border-radius: 18px;
+  padding: 2.5rem 3rem;
+  text-align: center;
+  box-shadow: 0 0 40px rgba(111,207,58,.35);
+  animation: popIn .35s cubic-bezier(.34,1.56,.64,1);
+}
+
+@keyframes popIn {
+  from { transform: scale(.6); opacity: 0; }
+  to   { transform: scale(1);  opacity: 1; }
+}
+
+.levelup-emoji {
+  font-size: 3.5rem;
+  animation: spinStar 1.2s ease-out;
+}
+
+@keyframes spinStar {
+  from { transform: rotate(-180deg) scale(0); }
+  to   { transform: rotate(0deg)    scale(1); }
+}
+
+.levelup-title {
+  font-size: 1.1rem;
+  letter-spacing: .15em;
+  color: #a8e06a;
+  text-transform: uppercase;
+  margin: .5rem 0 .25rem;
+  opacity: .8;
+}
+
+.levelup-level {
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: .75rem;
+}
+
+.levelup-reward {
+  font-size: 1.05rem;
+  color: #ffd84a;
+  margin-bottom: 1.5rem;
+  min-height: 1.4rem;
+}
+
+.levelup-close-btn {
+  background: linear-gradient(135deg, #4a9a1a, #6fcf3a);
+  color: #fff;
+  border: none;
+  border-radius: 30px;
+  padding: .6rem 1.8rem;
+  font-size: 1rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform .15s, box-shadow .15s;
+}
+
+.levelup-close-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 16px rgba(111,207,58,.4);
+}
