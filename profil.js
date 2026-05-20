@@ -1,14 +1,13 @@
-import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from '../config.js';
+import { SUPABASE_URL, SUPABASE_ANON } from '../config.js';
 import { onAuthReady, getBotanicaUserId } from './lib/auth.js';
 import { createPlantCharacterSvg } from './lib/plantSvg.js';
 import { getFallbackSpeciesTree } from './lib/speciesTree.js';
 import { QUALITY_TIERS } from './lib/quality.js';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 const TOTAL_SPECIES = 32;
 
-// XP requis pour passer au niveau N (simple courbe)
 function xpForLevel(n) { return n * 100; }
 
 function fmt(n) { return Number(n ?? 0).toLocaleString('fr-FR'); }
@@ -23,7 +22,6 @@ function timeAgo(iso) {
 }
 
 async function loadProfile(userId) {
-  // Toutes les requêtes en parallèle
   const [playerRes, codexRes, salesRes, mutRes, firstRes] = await Promise.all([
     supabase.from('botanica_player_data')
       .select('coins, xp, level, codex_count, display_name, avatar_url, created_at')
@@ -49,13 +47,12 @@ async function loadProfile(userId) {
       .eq('was_first_server', true),
   ]);
 
-  const player   = playerRes.data ?? {};
-  const codex    = codexRes.data ?? [];
-  const sales    = salesRes.data ?? [];
-  const mutCount = mutRes.count ?? 0;
+  const player     = playerRes.data ?? {};
+  const codex      = codexRes.data ?? [];
+  const sales      = salesRes.data ?? [];
+  const mutCount   = mutRes.count ?? 0;
   const firstCount = firstRes.count ?? 0;
 
-  // Espèces pour le codex visuel
   const { data: speciesData } = await supabase
     .from('codex_botanique_global').select('*')
     .order('tier').order('id');
@@ -81,10 +78,10 @@ function renderIdentity(p, codexCount) {
   document.getElementById('profil-coins').textContent = `🪙 ${fmt(p.coins)}`;
   document.getElementById('profil-codex').textContent = `📖 ${codexCount} / ${TOTAL_SPECIES}`;
 
-  const xp      = p.xp ?? 0;
-  const level   = p.level ?? 1;
+  const xp       = p.xp ?? 0;
+  const level    = p.level ?? 1;
   const xpNeeded = xpForLevel(level);
-  const pct     = Math.min((xp % xpNeeded) / xpNeeded * 100, 100);
+  const pct      = Math.min((xp % xpNeeded) / xpNeeded * 100, 100);
   document.getElementById('profil-xp-fill').style.width = `${pct}%`;
   document.getElementById('profil-xp-label').textContent = `${fmt(xp)} XP`;
 
@@ -140,7 +137,6 @@ function renderSales(sales, speciesList) {
   }).join('');
 }
 
-// Init
 onAuthReady(() => {
   const userId = getBotanicaUserId();
   if (!userId) {

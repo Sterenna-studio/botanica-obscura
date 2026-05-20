@@ -1,4 +1,4 @@
-import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from '../config.js';
+import { SUPABASE_URL, SUPABASE_ANON } from '../config.js';
 import { createPlantCharacterSvg } from './lib/plantSvg.js';
 import { getFallbackSpeciesTree } from './lib/speciesTree.js';
 import { startMutationPot, loadActivePot, harvestMutation } from './lib/mutation.js';
@@ -13,7 +13,7 @@ import { loadPlayerData, renderPlayerStats } from './lib/playerData.js';
 import { QUALITY_TIERS } from './lib/quality.js';
 import { initMysterySeed } from './lib/mysterySeed.js';
 
-export const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+export const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 export function getUserId() { return getBotanicaUserId(); }
 

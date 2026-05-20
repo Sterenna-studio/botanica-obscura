@@ -1,7 +1,7 @@
-import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from '../config.js';
+import { SUPABASE_URL, SUPABASE_ANON } from '../config.js';
 import { renderPodium, renderRows } from './lib/leaderboard.js';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 const tbody   = document.getElementById('lb-body');
 const podium  = document.getElementById('lb-podium');
