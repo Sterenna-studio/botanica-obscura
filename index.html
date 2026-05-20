@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="styles/toast.css" />
     <link rel="stylesheet" href="styles/mysterySeed.css" />
     <link rel="stylesheet" href="styles/xp.css" />
+    <link rel="stylesheet" href="styles/pots.css" />
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   </head>
   <body>
@@ -27,6 +28,7 @@
           </div>
           <span id="xp-text" class="xp-text">0 / 100 XP</span>
         </div>
+        <span id="pot-slots-badge">🪨 1 slot</span>
         <a href="leaderboard.html" class="nav-link">🏆 Classement</a>
         <a href="profil.html" class="nav-link">🌱 Profil</a>
         <button id="notifBtn" class="notif-btn">🔔 Activer notifs</button>
@@ -50,21 +52,11 @@
     </div>
 
     <main class="layout">
-      <section class="panel">
-        <h2>🧪 Pot de mutation</h2>
-        <div class="pot-card">
-          <label>Espèce mère A
-            <select id="speciesA"></select>
-          </label>
-          <label>Espèce mère B
-            <select id="speciesB"></select>
-          </label>
-          <button id="startMutationBtn">Lancer une mutation (12h)</button>
-          <button id="harvestBtn" style="display:none">🌺 Récolter la mutation</button>
-          <div id="mutationStatus" class="status"></div>
-          <div class="progress-wrap"><div id="progressBar" class="progress-bar"></div></div>
-          <div id="potVisual" class="pot-visual"></div>
-        </div>
+      <!-- SECTION POTS MULTI-SLOTS -->
+      <section class="panel full-width" id="pots-section">
+        <h2>🧪 Pots de mutation</h2>
+        <p class="muted">Chaque pot peut faire pousser une mutation en parallèle. Débloquez de nouveaux slots en montant de niveau (Lv.4, Lv.5, Lv.8).</p>
+        <div id="pots-grid" class="pots-grid-wrap"></div>
       </section>
 
       <section class="panel">
@@ -77,13 +69,13 @@
 
       <section class="panel full-width">
         <h2>🌡️ Jardin &amp; Améliorations</h2>
-        <p class="muted">Améliorez votre jardin pour augmenter la qualité de vos récoltes. Achetez avec vos 🪙 gagnées en vendant au NPC.</p>
+        <p class="muted">Améliorez votre jardin pour augmenter la qualité de vos récoltes.</p>
         <div id="gardenContainer" class="garden-grid"></div>
       </section>
 
       <section class="panel full-width">
         <h2>🗺️ Arbre des mutations</h2>
-        <p class="muted">Clique sur une espèce pour la prévisualiser et suivre ses branches de mutation.</p>
+        <p class="muted">Clique sur une espèce pour la prévisualiser et suivre ses branches.</p>
         <div id="mutationTree" class="mutation-tree-wrap"></div>
       </section>
 
@@ -95,7 +87,7 @@
 
       <section class="panel full-width">
         <h2>🎒 Inventaire des graines</h2>
-        <p class="muted">Cliquez sur "Utiliser" pour sélectionner une graine dans le pot de mutation. Vendez au NPC pour gagner des pièces.</p>
+        <p class="muted">Vendez au NPC pour gagner des pièces.</p>
         <div id="inventoryEmpty" class="muted" style="display:none">Aucune graine pour l'instant.</div>
         <div id="inventoryGrid" class="inventory-grid"></div>
       </section>
@@ -103,7 +95,7 @@
       <section class="panel full-width">
         <div id="mystery-seed-zone">
           <h3>📦 Colis mystère</h3>
-          <p class="muted">Une graine aléatoire Tier 1 toutes les 12h. L'espèce sera révélée dans le pot de mutation.</p>
+          <p class="muted">Une graine aléatoire Tier 1 toutes les 12h.</p>
           <button id="mystery-seed-btn">📦 Récupérer ma graine mystère</button>
           <div id="mystery-seed-countdown"></div>
           <div id="mystery-seed-msg"></div>
