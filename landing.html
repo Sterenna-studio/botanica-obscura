@@ -26,6 +26,26 @@
         overflow-x: hidden;
       }
 
+      /* REDIRECT OVERLAY */
+      #redirect-overlay {
+        position: fixed; inset: 0;
+        background: #0d1a0d;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        gap: 1.5rem; z-index: 9999;
+      }
+      #redirect-overlay .redir-emblem { font-size: 4rem; animation: float 3s ease-in-out infinite; }
+      #redirect-overlay .redir-text {
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 11px; letter-spacing: .3em;
+        color: rgba(168,230,168,.6); text-align: center;
+        animation: pulse-anim 1.5s infinite;
+      }
+      #redirect-overlay .redir-name {
+        font-family: 'Cinzel', serif;
+        font-size: 1.1rem; color: #f0d080;
+      }
+
       /* HERO */
       .hero {
         min-height: 100vh;
@@ -101,9 +121,7 @@
         transform: translateY(-2px);
       }
 
-      /* ────────────────────────────────────
-         SAVE PREVIEW
-      ──────────────────────────────────── */
+      /* SAVE PREVIEW */
       .save-section {
         padding: 3rem 2rem;
         background: linear-gradient(180deg, #0d1a0d, #111e11);
@@ -289,6 +307,13 @@
   </head>
   <body>
 
+    <!-- OVERLAY REDIRECTION (caché par défaut, visible si session active) -->
+    <div id="redirect-overlay" style="display:none">
+      <div class="redir-emblem">🌿</div>
+      <div class="redir-name" id="redir-name">Botaniste</div>
+      <div class="redir-text">SESSION ACTIVE · REDIRECTION EN COURS…</div>
+    </div>
+
     <!-- HERO -->
     <section class="hero">
       <div class="hero-emblem">🌿</div>
@@ -349,6 +374,9 @@
             <div class="stat-sub">complétées</div>
           </div>
         </div>
+
+        <!-- Bouton Jouer affiché quand connecté -->
+        <a href="index.html" class="btn-primary" style="text-align:center;margin-top:8px;">🧪 Continuer l'aventure →</a>
       </div>
     </section>
 
@@ -438,45 +466,24 @@
 
         if (!user) { show('save-no-auth'); return; }
 
+        // ── Utilisateur déjà connecté : afficher overlay et rediriger ──
         const meta     = user.user_metadata;
-        const username = meta?.username ?? meta?.full_name ?? user.email?.split('@')[0] ?? 'BOTANISTE';
+        const username = meta?.username ?? meta?.full_name ?? user.email?.split('@')[0] ?? 'Botaniste';
 
-        const [pdRes, codexRes, mutRes] = await Promise.all([
-          supabase.from('botanica_player_data')
-            .select('coins,level,xp').eq('user_id', user.id).maybeSingle(),
-          supabase.from('player_codex')
-            .select('species_id', { count:'exact', head:true }).eq('user_id', user.id),
-          supabase.from('pot_mutations')
-            .select('id', { count:'exact', head:true })
-            .eq('user_id', user.id).eq('status','completed'),
-        ]);
+        set('redir-name', username.toUpperCase());
+        $('redirect-overlay').style.display = 'flex';
 
-        const pd    = pdRes.data;
-        const coins = pd?.coins ?? 0;
-        const level = pd?.level ?? 1;
-        const xp    = pd?.xp    ?? 0;
-        const codex = codexRes.count ?? 0;
-        const muts  = mutRes.count   ?? 0;
-
-        if (meta?.avatar_url) {
-          const img = document.createElement('img');
-          img.src = meta.avatar_url; img.alt = 'avatar'; img.className = 'player-avatar';
-          $('player-avatar').replaceWith(img);
-        }
-
-        set('player-name',    username.toUpperCase());
-        set('player-sub',     `BOTANISTE · NIVEAU ${level}`);
-        set('player-coins',   `🪙 ${fmt(coins)}`);
-        set('stat-level',     level);
-        set('stat-xp',        `${fmt(xp)} XP`);
-        set('stat-coins',     fmt(coins));
-        set('stat-codex',     codex);
-        set('stat-mutations', muts);
-
-        show('save-card');
+        // Petit délai pour que l'overlay soit visible, puis redirect
+        await new Promise(r => setTimeout(r, 1200));
+        window.location.href = 'index.html';
       }
 
-      init().catch(console.error);
+      init().catch(err => {
+        // En cas d'erreur, on affiche quand même la landing normalement
+        console.error('[landing] init error:', err);
+        hide('save-loading');
+        show('save-no-auth');
+      });
     </script>
 
   </body>
