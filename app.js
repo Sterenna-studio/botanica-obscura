@@ -14,6 +14,7 @@ import { initMysterySeed } from './lib/mysterySeed.js';
 import { addXpToPlayer, computeHarvestXp } from './lib/xp.js';
 import { initPots, updatePotsSpecies, updatePotsPlayerData } from './lib/pots.js';
 import { initOnboarding } from './lib/onboarding.js';
+import { adjustLocalSeedQuantity, loadLocal, patchLocal } from './lib/localSave.js';
 
 export { supabase };
 export function getUserId() { return getBotanicaUserId(); }
@@ -52,12 +53,18 @@ async function loadSpecies() {
     .order('id',   { ascending: true });
 
   const userId = getUserId();
-  const { data: codexData } = await supabase
+  const { data: codexData, error: codexErr } = await supabase
     .from('botanica_player_codex')
     .select('species_id, was_first_server')
     .eq('user_id', userId);
 
-  playerCodexIds = new Set((codexData ?? []).map(r => r.species_id));
+  if (codexErr) {
+    console.warn('[app] Chargement codex cloud échoué, fallback local :', codexErr.message);
+    playerCodexIds = new Set(loadLocal()?.codexIds ?? []);
+  } else {
+    playerCodexIds = new Set((codexData ?? []).map(r => r.species_id));
+    patchLocal('codexIds', [...playerCodexIds]);
+  }
   window.__botanicaCodexIds = playerCodexIds;
 
   speciesList = (!globalErr && globalData?.length)
@@ -150,7 +157,16 @@ async function onBuyGardenEffect(effectId) {
 }
 
 async function onHarvest(harvestResult, xpResult) {
-  lastHarvestedSp = harvestResult.result_species;
+  lastHarvestedSp = harvestResult.result_species
+    ? { ...harvestResult.result_species, quality_tier_id: harvestResult.quality_tier_id ?? 1 }
+    : null;
+
+  if (lastHarvestedSp?.id) {
+    adjustLocalSeedQuantity(lastHarvestedSp.id, harvestResult.seed_quantity_delta ?? 1);
+    playerCodexIds.add(lastHarvestedSp.id);
+    window.__botanicaCodexIds = playerCodexIds;
+    patchLocal('codexIds', [...playerCodexIds]);
+  }
 
   currentPlayerData = {
     ...currentPlayerData,
