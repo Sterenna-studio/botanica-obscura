@@ -7,57 +7,60 @@ import { QUALITY_TIERS } from './lib/quality.js';
 const TOTAL_SPECIES = 32;
 
 function xpForLevel(n) { return n * 100; }
-
 function fmt(n) { return Number(n ?? 0).toLocaleString('fr-FR'); }
-
 function timeAgo(iso) {
   const diff = Date.now() - new Date(iso).getTime();
   const d = Math.floor(diff / 86400000);
   const h = Math.floor((diff % 86400000) / 3600000);
   if (d > 0) return `il y a ${d}j`;
   if (h > 0) return `il y a ${h}h`;
-  return 'récemment';
+  return 'r\u00e9cemment';
 }
 
 async function loadProfile(userId) {
-  const [playerRes, codexRes, salesRes, mutRes, firstRes] = await Promise.all([
+  const [playerRes, profileRes, codexRes, salesRes, mutRes, firstRes] = await Promise.all([
     supabase.from('botanica_player_data')
-      .select('coins, xp, level, codex_count, display_name, avatar_url, created_at')
+      .select('coins, xp, level, created_at')
       .eq('user_id', userId).maybeSingle(),
 
-    supabase.from('player_codex')
+    supabase.from('profiles')
+      .select('username, avatar_url')
+      .eq('id', userId).maybeSingle(),
+
+    supabase.from('botanica_player_codex')
       .select('species_id, was_first_server, unlocked_at')
       .eq('user_id', userId),
 
-    supabase.from('npc_sales_log')
+    supabase.from('botanica_npc_sales_log')
       .select('species_id, quality_tier_id, price_sold, sold_at')
       .eq('user_id', userId)
       .order('sold_at', { ascending: false })
       .limit(20),
 
-    supabase.from('mutation_pots')
+    supabase.from('botanica_mutation_pots')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', userId),
 
-    supabase.from('player_codex')
+    supabase.from('botanica_player_codex')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', userId)
       .eq('was_first_server', true),
   ]);
 
   const player     = playerRes.data ?? {};
+  const profile    = profileRes.data ?? {};
   const codex      = codexRes.data ?? [];
   const sales      = salesRes.data ?? [];
   const mutCount   = mutRes.count ?? 0;
   const firstCount = firstRes.count ?? 0;
 
   const { data: speciesData } = await supabase
-    .from('codex_botanique_global').select('*')
+    .from('botanica_species').select('*')
     .order('tier').order('id');
   const speciesList = speciesData?.length ? speciesData : getFallbackSpeciesTree();
   const codexIds    = new Set(codex.map(c => c.species_id));
 
-  renderIdentity(player, codex.length);
+  renderIdentity({ ...player, username: profile.username, avatar_url: profile.avatar_url }, codex.length);
   renderStats(mutCount, sales, firstCount);
   renderCodex(speciesList, codexIds, codex);
   renderSales(sales, speciesList);
@@ -71,10 +74,10 @@ function renderIdentity(p, codexCount) {
     avatar.style.display = 'block';
     placeholder.style.display = 'none';
   }
-  document.getElementById('profil-name').textContent  = p.display_name ?? 'Botaniste';
+  document.getElementById('profil-name').textContent  = p.username ?? 'Botaniste';
   document.getElementById('profil-level').textContent = `Lv. ${p.level ?? 1}`;
-  document.getElementById('profil-coins').textContent = `🪙 ${fmt(p.coins)}`;
-  document.getElementById('profil-codex').textContent = `📖 ${codexCount} / ${TOTAL_SPECIES}`;
+  document.getElementById('profil-coins').textContent = `\ud83e\ude99 ${fmt(p.coins)}`;
+  document.getElementById('profil-codex').textContent = `\ud83d\udcd6 ${codexCount} / ${TOTAL_SPECIES}`;
 
   const xp       = p.xp ?? 0;
   const level    = p.level ?? 1;
@@ -93,7 +96,7 @@ function renderStats(mutCount, sales, firstCount) {
   const totalEarned = sales.reduce((s, r) => s + (r.price_sold ?? 0), 0);
   document.getElementById('stat-mutations').textContent = fmt(mutCount);
   document.getElementById('stat-sold').textContent      = fmt(sales.length);
-  document.getElementById('stat-earned').textContent    = `🪙 ${fmt(totalEarned)}`;
+  document.getElementById('stat-earned').textContent    = `\ud83e\ude99 ${fmt(totalEarned)}`;
   document.getElementById('stat-first').textContent     = fmt(firstCount);
 }
 
@@ -111,7 +114,7 @@ function renderCodex(speciesList, codexIds, codexRows) {
     }
     return `<div class="profil-codex-slot rarity-${s.rarity}" title="${s.name}">
       <div class="slot-svg">${createPlantCharacterSvg(s)}</div>
-      ${firstIds.has(s.id) ? '<div class="slot-first">🏅</div>' : ''}
+      ${firstIds.has(s.id) ? '<div class="slot-first">\ud83c\udf85</div>' : ''}
     </div>`;
   }).join('');
 }
@@ -128,8 +131,8 @@ function renderSales(sales, speciesList) {
     const quality = QUALITY_TIERS.find(t => t.id === row.quality_tier_id);
     return `<tr>
       <td><span class="rarity-badge ${sp?.rarity ?? ''}">${sp?.name ?? '???'}</span></td>
-      <td>${quality?.label ?? '—'}</td>
-      <td>🪙 ${fmt(row.price_sold)}</td>
+      <td>${quality?.label ?? '\u2014'}</td>
+      <td>\ud83e\ude99 ${fmt(row.price_sold)}</td>
       <td class="table-date">${timeAgo(row.sold_at)}</td>
     </tr>`;
   }).join('');
