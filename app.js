@@ -5,7 +5,7 @@ import { renderMutationTree } from './lib/mutationTree.js';
 import { loadInventory, renderInventory } from './lib/inventory.js';
 import { ensureTesters, renderTesters } from './lib/testers.js';
 import { requestNotifPermission, restorePotNotification } from './lib/notifications.js';
-import { onAuthReady, getBotanicaUserId, isLoggedIn } from './lib/auth.js';
+import { onAuthReady, getBotanicaUserId, isLoggedIn, requireAuth, getProfile } from './lib/auth.js';
 import { initAuthModal } from './lib/authModal.js';
 import { loadGarden, renderGarden, buyGardenEffect } from './lib/garden.js';
 import { loadPlayerData, renderPlayerStats } from './lib/playerData.js';
@@ -32,7 +32,7 @@ let currentPlayerData = { coins: 0, level: 1, xp: 0, pot_slots: 1 };
 
 window.__botanicaCodexIds = playerCodexIds;
 
-// ── Level-up overlay ─────────────────────────────────────────────────────
+// ── Level-up overlay ──────────────────────────────────────────────────────
 function showLevelUpOverlay(newLevel, reward) {
   const overlay  = document.getElementById('levelup-overlay');
   const levelEl  = document.getElementById('levelup-level');
@@ -45,7 +45,7 @@ function showLevelUpOverlay(newLevel, reward) {
   closeBtn.onclick = () => { overlay.style.display = 'none'; };
 }
 
-// ── Espèces ─────────────────────────────────────────────────────────────
+// ── Espèces ───────────────────────────────────────────────────────────────
 async function loadSpecies() {
   const { data: globalData, error: globalErr } = await supabase
     .from('codex_botanique_global')
@@ -78,7 +78,7 @@ function renderPreview(species) {
   plantDesc.textContent    = species.description || 'Aucune description.';
 }
 
-// ── Codex ─────────────────────────────────────────────────────────────────
+// ── Codex ──────────────────────────────────────────────────────────────────
 function renderCodex() {
   codexGrid.innerHTML = speciesList.map(s => {
     const state = playerCodexIds.has(s.id) ? 'unlocked'
@@ -115,7 +115,7 @@ function renderCodex() {
   });
 }
 
-// ── Inventaire & Testers ─────────────────────────────────────────────────
+// ── Inventaire & Testers ──────────────────────────────────────────────────
 async function refreshInventory() {
   const seeds = await loadInventory(getUserId());
   renderInventory(
@@ -135,7 +135,7 @@ async function refreshTesters() {
   renderTesters(testers, lastHarvestedSp);
 }
 
-// ── Jardin ───────────────────────────────────────────────────────────────
+// ── Jardin ────────────────────────────────────────────────────────────────
 async function refreshGarden() {
   currentGarden = await loadGarden(getUserId());
   renderGarden(currentGarden, currentPlayerData.coins, onBuyGardenEffect);
@@ -150,7 +150,7 @@ async function onBuyGardenEffect(effectId) {
   renderGarden(currentGarden, currentPlayerData.coins, onBuyGardenEffect);
 }
 
-// ── Callback harvest ─────────────────────────────────────────────────────
+// ── Callback harvest ──────────────────────────────────────────────────────
 async function onHarvest(harvestResult, xpResult) {
   lastHarvestedSp = harvestResult.result_species;
 
@@ -201,15 +201,27 @@ if (notifBtn) {
   });
 }
 
-// ── Init ─────────────────────────────────────────────────────────────────
+// ── Init ──────────────────────────────────────────────────────────────────
 async function init() {
   initAuthModal();
   restorePotNotification();
 
-  // SSO transparent : restaure la session Gwen Ha Star si déjà connecté
+  // 1. SSO transparent : restaure la session Gwen Ha Star si présente
   await restoreStarSession();
 
+  // 2. Guard auth — pattern identique à gwen-ha-star-static :
+  //    getSession() → si absent redirect landing, sinon getProfile() avec cache
+  const auth = await requireAuth('/landing.html');
+  if (!auth) return; // redirect en cours
+
+  // auth.profile disponible ici (cache hit pour tous les modules suivants)
+  // auth.user, auth.session également accessibles
+
+  // 3. onAuthReady pour les modules qui écoutent onAuthStateChange
   onAuthReady(async () => {
+    // getProfile() → cache hit, 0 requête réseau ✅
+    const profile = await getProfile();
+
     currentPlayerData = await loadPlayerData(getUserId());
     renderPlayerStats(currentPlayerData);
     currentPlayerData.user_id = getUserId();
