@@ -4,15 +4,22 @@ import { getFallbackSpeciesTree } from './lib/speciesTree.js';
 import { renderMutationTree } from './lib/mutationTree.js';
 import { loadInventory, renderInventory } from './lib/inventory.js';
 import { ensureTesters, renderTesters } from './lib/testers.js';
-import { requestNotifPermission, restorePotNotification } from './lib/notifications.js';
+import { restorePotNotification } from './lib/notifications.js';
 import { onAuthReady, getBotanicaUserId, isLoggedIn, requireAuth, getProfile } from './lib/auth.js';
 import { initAuthModal } from './lib/authModal.js';
 import { loadGarden, renderGarden, buyGardenEffect } from './lib/garden.js';
 import { loadPlayerData, renderPlayerStats } from './lib/playerData.js';
 import { QUALITY_TIERS } from './lib/quality.js';
 import { initMysterySeed } from './lib/mysterySeed.js';
-import { addXpToPlayer, computeHarvestXp } from './lib/xp.js';
-import { initPots, updatePotsSpecies, updatePotsPlayerData } from './lib/pots.js';
+import { computeHarvestXp } from './lib/xp.js';
+import {
+  initPots,
+  selectSpeciesForNextPot,
+  updatePotsGarden,
+  updatePotsInventory,
+  updatePotsPlayerData,
+  updatePotsSpecies,
+} from './lib/pots.js';
 import { initOnboarding } from './lib/onboarding.js';
 import { adjustLocalSeedQuantity, loadLocal, patchLocal } from './lib/localSave.js';
 
@@ -125,9 +132,16 @@ function renderCodex() {
 
 async function refreshInventory() {
   const seeds = await loadInventory(getUserId());
+  updatePotsInventory(seeds);
   renderInventory(
     seeds,
-    (_speciesId) => {},
+    (speciesId) => {
+      const selected = selectSpeciesForNextPot(speciesId);
+      if (!selected) {
+        console.warn('[app] Impossible de sélectionner cette graine dans un pot libre.');
+      }
+      return selected;
+    },
     (newCoins) => {
       currentPlayerData.coins = newCoins;
       renderPlayerStats(currentPlayerData);
@@ -144,6 +158,7 @@ async function refreshTesters() {
 
 async function refreshGarden() {
   currentGarden = await loadGarden(getUserId());
+  updatePotsGarden(currentGarden);
   renderGarden(currentGarden, currentPlayerData.coins, onBuyGardenEffect);
 }
 
@@ -152,6 +167,7 @@ async function onBuyGardenEffect(effectId) {
   if (result.error) { alert(result.error); return; }
   currentGarden           = result.newGarden;
   currentPlayerData.coins = result.newCoins;
+  updatePotsGarden(currentGarden);
   renderPlayerStats(currentPlayerData);
   renderGarden(currentGarden, currentPlayerData.coins, onBuyGardenEffect);
 }
@@ -238,7 +254,7 @@ async function init() {
       refreshGarden(),
     ]);
 
-    await initPots(speciesList, currentPlayerData, onHarvest);
+    await initPots(speciesList, currentPlayerData, onHarvest, currentGarden, refreshInventory);
 
     await initOnboarding(getUserId(), async () => {
       await refreshInventory();
