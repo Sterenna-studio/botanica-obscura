@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="styles/xp.css" />
     <link rel="stylesheet" href="styles/pots.css" />
     <link rel="stylesheet" href="styles/onboarding.css" />
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Plus besoin du script CDN global : supabase est importé en ESM dans lib/supabaseClient.js -->
   </head>
   <body>
     <header class="topbar">
@@ -53,7 +53,6 @@
     </div>
 
     <main class="layout">
-      <!-- SECTION POTS MULTI-SLOTS -->
       <section class="panel full-width" id="pots-section">
         <h2>🧪 Pots de mutation</h2>
         <p class="muted">Chaque pot peut faire pousser une mutation en parallèle. Débloquez de nouveaux slots en montant de niveau (Lv.4, Lv.5, Lv.8).</p>
