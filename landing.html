@@ -303,6 +303,21 @@
         padding: 0.3rem 0.8rem; border-radius: 20px;
         letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 1.5rem;
       }
+
+      /* CREDITS */
+      .credits {
+        padding: 1.5rem 2rem;
+        background: #0d1a0d;
+        border-top: 1px solid rgba(74,158,63,0.1);
+        text-align: center;
+      }
+      .credits-text {
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 9px; letter-spacing: .25em;
+        color: rgba(168,230,168,.3);
+        text-transform: uppercase;
+      }
+      .credits-text span { color: rgba(240,208,128,.5); }
     </style>
   </head>
   <body>
@@ -374,8 +389,6 @@
             <div class="stat-sub">complétées</div>
           </div>
         </div>
-
-        <!-- Bouton Jouer affiché quand connecté -->
         <a href="index.html" class="btn-primary" style="text-align:center;margin-top:8px;">🧪 Continuer l'aventure →</a>
       </div>
     </section>
@@ -450,6 +463,13 @@
       <a href="index.html" class="btn-primary">Accéder au jeu →</a>
     </section>
 
+    <!-- CREDITS -->
+    <footer class="credits">
+      <p class="credits-text">
+        Imaginé par <span>bzh_spirit</span> · Construit par <span>MutenRock</span>
+      </p>
+    </footer>
+
     <script type="module">
       import { supabase, restoreStarSession } from './lib/supabaseClient.js';
 
@@ -466,20 +486,17 @@
 
         if (!user) { show('save-no-auth'); return; }
 
-        // ── Utilisateur déjà connecté : afficher overlay et rediriger ──
         const meta     = user.user_metadata;
         const username = meta?.username ?? meta?.full_name ?? user.email?.split('@')[0] ?? 'Botaniste';
 
         set('redir-name', username.toUpperCase());
         $('redirect-overlay').style.display = 'flex';
 
-        // Petit délai pour que l'overlay soit visible, puis redirect
         await new Promise(r => setTimeout(r, 1200));
         window.location.href = 'index.html';
       }
 
       init().catch(err => {
-        // En cas d'erreur, on affiche quand même la landing normalement
         console.error('[landing] init error:', err);
         hide('save-loading');
         show('save-no-auth');
