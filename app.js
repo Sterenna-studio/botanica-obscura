@@ -32,7 +32,6 @@ let currentPlayerData = { coins: 0, level: 1, xp: 0, pot_slots: 1 };
 
 window.__botanicaCodexIds = playerCodexIds;
 
-// ── Level-up overlay ──────────────────────────────────────────────────────
 function showLevelUpOverlay(newLevel, reward) {
   const overlay  = document.getElementById('levelup-overlay');
   const levelEl  = document.getElementById('levelup-level');
@@ -45,17 +44,16 @@ function showLevelUpOverlay(newLevel, reward) {
   closeBtn.onclick = () => { overlay.style.display = 'none'; };
 }
 
-// ── Espèces ───────────────────────────────────────────────────────────────
 async function loadSpecies() {
   const { data: globalData, error: globalErr } = await supabase
-    .from('codex_botanique_global')
+    .from('botanica_species')
     .select('*')
     .order('tier', { ascending: true })
     .order('id',   { ascending: true });
 
   const userId = getUserId();
   const { data: codexData } = await supabase
-    .from('player_codex')
+    .from('botanica_player_codex')
     .select('species_id, was_first_server')
     .eq('user_id', userId);
 
@@ -63,7 +61,11 @@ async function loadSpecies() {
   window.__botanicaCodexIds = playerCodexIds;
 
   speciesList = (!globalErr && globalData?.length)
-    ? globalData
+    ? globalData.map(s => ({
+        ...s,
+        discoverer_name: s.discovered_by_username,
+        discoverer_avatar: null,
+      }))
     : getFallbackSpeciesTree();
 
   renderCodex();
@@ -78,7 +80,6 @@ function renderPreview(species) {
   plantDesc.textContent    = species.description || 'Aucune description.';
 }
 
-// ── Codex ──────────────────────────────────────────────────────────────────
 function renderCodex() {
   codexGrid.innerHTML = speciesList.map(s => {
     const state = playerCodexIds.has(s.id) ? 'unlocked'
@@ -115,12 +116,11 @@ function renderCodex() {
   });
 }
 
-// ── Inventaire & Testers ──────────────────────────────────────────────────
 async function refreshInventory() {
   const seeds = await loadInventory(getUserId());
   renderInventory(
     seeds,
-    (_speciesId) => { /* navigation vers pot gérée dans pots.js */ },
+    (_speciesId) => {},
     (newCoins) => {
       currentPlayerData.coins = newCoins;
       renderPlayerStats(currentPlayerData);
@@ -135,7 +135,6 @@ async function refreshTesters() {
   renderTesters(testers, lastHarvestedSp);
 }
 
-// ── Jardin ────────────────────────────────────────────────────────────────
 async function refreshGarden() {
   currentGarden = await loadGarden(getUserId());
   renderGarden(currentGarden, currentPlayerData.coins, onBuyGardenEffect);
@@ -150,7 +149,6 @@ async function onBuyGardenEffect(effectId) {
   renderGarden(currentGarden, currentPlayerData.coins, onBuyGardenEffect);
 }
 
-// ── Callback harvest ──────────────────────────────────────────────────────
 async function onHarvest(harvestResult, xpResult) {
   lastHarvestedSp = harvestResult.result_species;
 
@@ -201,26 +199,16 @@ if (notifBtn) {
   });
 }
 
-// ── Init ──────────────────────────────────────────────────────────────────
 async function init() {
   initAuthModal();
   restorePotNotification();
-
-  // 1. SSO transparent : restaure la session Gwen Ha Star si présente
   await restoreStarSession();
 
-  // 2. Guard auth — pattern identique à gwen-ha-star-static :
-  //    getSession() → si absent redirect landing, sinon getProfile() avec cache
   const auth = await requireAuth('/landing.html');
-  if (!auth) return; // redirect en cours
+  if (!auth) return;
 
-  // auth.profile disponible ici (cache hit pour tous les modules suivants)
-  // auth.user, auth.session également accessibles
-
-  // 3. onAuthReady pour les modules qui écoutent onAuthStateChange
   onAuthReady(async () => {
-    // getProfile() → cache hit, 0 requête réseau ✅
-    const profile = await getProfile();
+    await getProfile();
 
     currentPlayerData = await loadPlayerData(getUserId());
     renderPlayerStats(currentPlayerData);
