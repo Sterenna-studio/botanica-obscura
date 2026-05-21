@@ -22,6 +22,7 @@ import {
 } from './lib/pots.js';
 import { initOnboarding } from './lib/onboarding.js';
 import { adjustLocalSeedQuantity, loadLocal, patchLocal } from './lib/localSave.js';
+import { showIntroIfNeeded } from './lib/intro.js';
 
 export { supabase };
 export function getUserId() { return getBotanicaUserId(); }
@@ -241,6 +242,7 @@ async function init() {
 
   onAuthReady(async () => {
     await getProfile();
+    await showIntroIfNeeded();
 
     currentPlayerData = await loadPlayerData(getUserId());
     renderPlayerStats(currentPlayerData);
