@@ -154,9 +154,21 @@ WHERE display_name IS NOT NULL;
 
 ---
 
-## Note — Bug config.js supprimé
+## Migrations à appliquer
 
-`lib/mutation.js` importe `SUPABASE_URL` depuis `'../config.js'` (ligne 3).
-Ce fichier a été supprimé lors du refactor auth Nitro (commit `3b061c2`).
-La valeur doit être lue depuis `lib/supabaseClient.js` → `supabase.supabaseUrl`.
-À corriger avant V0.2.
+### `sql/fix_v0.2_schema_drift.sql` *(à exécuter sur la prod)*
+
+Corrige deux divergences DB ↔ code détectées en prod V0.2 :
+
+1. **`botanica_player_garden.effects` manquant** — la prod a été créée avec les
+   anciennes colonnes individuelles (`waterBonus`, `lightBonus`, …) au lieu du
+   JSONB `effects` attendu par `lib/garden.js`. La migration migre les valeurs
+   existantes vers `effects` puis drop les anciennes colonnes.
+
+2. **Contrainte UNIQUE `(user_id, species_id)` manquante sur
+   `botanica_player_seeds`** — sans elle, les upserts avec `onConflict` (utilisés
+   par `lib/onboarding.js` et le grant de mutation) renvoient 400. La migration
+   déduplique d'abord puis ajoute la contrainte.
+
+Le script est idempotent (`IF NOT EXISTS`, `DROP POLICY IF EXISTS`) — réexécutable
+sans risque.
