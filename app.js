@@ -237,7 +237,7 @@ async function init() {
   restorePotNotification();
   await restoreStarSession();
 
-  const auth = await requireAuth('/landing.html');
+  const auth = await requireAuth('/login.html');
   if (!auth) return;
 
   onAuthReady(async () => {
@@ -257,7 +257,6 @@ async function init() {
     ]);
 
     await initPots(speciesList, currentPlayerData, onHarvest, currentGarden, refreshInventory);
-
     await initOnboarding(getUserId(), async () => {
       await refreshInventory();
     });
