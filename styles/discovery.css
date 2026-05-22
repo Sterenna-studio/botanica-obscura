@@ -1,0 +1,115 @@
+/* ── Première découverte serveur ───────────────────────────────────── */
+.discovery-notice-container {
+  position: fixed;
+  top: 88px;
+  right: 18px;
+  z-index: 260;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.discovery-notice {
+  width: min(360px, calc(100vw - 32px));
+  display: grid;
+  grid-template-columns: 72px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(240, 192, 48, 0.42);
+  background:
+    radial-gradient(circle at top left, rgba(240, 192, 48, 0.18), transparent 46%),
+    rgba(14, 26, 15, 0.96);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.42), 0 0 24px rgba(240,192,48,0.12);
+  transform: translateX(24px);
+  opacity: 0;
+  transition: opacity .25s ease, transform .25s ease;
+  pointer-events: auto;
+}
+
+.discovery-notice.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.discovery-notice-svg {
+  width: 72px;
+  height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: rgba(0,0,0,0.22);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.discovery-notice-svg svg {
+  width: 62px;
+  height: 72px;
+}
+
+.discovery-notice-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.discovery-notice-copy strong {
+  color: var(--gold);
+  font-size: .92rem;
+}
+
+.discovery-notice-copy span {
+  color: var(--text);
+  font-size: .84rem;
+  line-height: 1.35;
+}
+
+.discovery-notice-close {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.discovery-notice-close:hover {
+  color: var(--text);
+  border-color: rgba(255,255,255,0.18);
+}
+
+.discovery-notice.rarity-legendary,
+.discovery-notice.rarity-mythic {
+  animation: discovery-glow 1.8s ease-in-out infinite;
+}
+
+@keyframes discovery-glow {
+  0%, 100% { box-shadow: 0 20px 50px rgba(0,0,0,0.42), 0 0 18px rgba(240,192,48,0.18); }
+  50% { box-shadow: 0 20px 58px rgba(0,0,0,0.48), 0 0 32px rgba(240,192,48,0.35); }
+}
+
+@media (max-width: 620px) {
+  .discovery-notice-container {
+    left: 12px;
+    right: 12px;
+    top: 76px;
+  }
+  .discovery-notice {
+    width: 100%;
+    grid-template-columns: 58px 1fr auto;
+  }
+  .discovery-notice-svg {
+    width: 58px;
+    height: 64px;
+  }
+  .discovery-notice-svg svg {
+    width: 52px;
+    height: 60px;
+  }
+}
