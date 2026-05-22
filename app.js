@@ -6,7 +6,6 @@ import { loadInventory, renderInventory } from './lib/inventory.js';
 import { ensureTesters, renderTesters } from './lib/testers.js';
 import { restorePotNotification } from './lib/notifications.js';
 import { onAuthReady, getBotanicaUserId, isLoggedIn, requireAuth, getProfile } from './lib/auth.js';
-import { initAuthModal } from './lib/authModal.js';
 import { loadGarden, renderGarden, buyGardenEffect } from './lib/garden.js';
 import { loadPlayerData, renderPlayerStats } from './lib/playerData.js';
 import { QUALITY_TIERS } from './lib/quality.js';
@@ -275,7 +274,6 @@ if (notifBtn) {
 }
 
 async function init() {
-  initAuthModal();
   restorePotNotification();
   await restoreStarSession();
 

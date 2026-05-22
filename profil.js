@@ -3,10 +3,9 @@ import { onAuthReady, getBotanicaUserId } from './lib/auth.js';
 import { createPlantCharacterSvg } from './lib/plantSvg.js';
 import { getFallbackSpeciesTree } from './lib/speciesTree.js';
 import { QUALITY_TIERS } from './lib/quality.js';
+import { resolveLevel } from './lib/xp.js';
 
 const TOTAL_SPECIES = 32;
-
-function xpForLevel(n) { return n * 100; }
 function fmt(n) { return Number(n ?? 0).toLocaleString('fr-FR'); }
 function timeAgo(iso) {
   const diff = Date.now() - new Date(iso).getTime();
@@ -79,12 +78,12 @@ function renderIdentity(p, codexCount) {
   document.getElementById('profil-coins').textContent = `\ud83e\ude99 ${fmt(p.coins)}`;
   document.getElementById('profil-codex').textContent = `\ud83d\udcd6 ${codexCount} / ${TOTAL_SPECIES}`;
 
-  const xp       = p.xp ?? 0;
-  const level    = p.level ?? 1;
-  const xpNeeded = xpForLevel(level);
-  const pct      = Math.min((xp % xpNeeded) / xpNeeded * 100, 100);
-  document.getElementById('profil-xp-fill').style.width = `${pct}%`;
-  document.getElementById('profil-xp-label').textContent = `${fmt(xp)} XP`;
+  const xp = p.xp ?? 0;
+  const { progress, currentLevelXp, nextLevelXp } = resolveLevel(xp);
+  document.getElementById('profil-xp-fill').style.width = `${progress}%`;
+  document.getElementById('profil-xp-label').textContent = nextLevelXp != null
+    ? `${fmt(currentLevelXp)} / ${fmt(nextLevelXp)} XP`
+    : `${fmt(xp)} XP (max)`;
 
   if (p.created_at) {
     document.getElementById('profil-joined').textContent =
