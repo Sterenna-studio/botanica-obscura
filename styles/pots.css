@@ -15,11 +15,26 @@
   display: flex;
   flex-direction: column;
   gap: .6rem;
-  transition: border-color .2s, box-shadow .2s;
+  transition: border-color .2s, box-shadow .2s, transform .2s;
 }
 
 .multi-pot-card.pot-active {
   border-color: rgba(111,207,58,.35);
+}
+
+.multi-pot-card.pot-empty {
+  border-color: rgba(168,224,106,.18);
+}
+
+.multi-pot-card.pot-placement-focus {
+  border-color: rgba(240,192,48,.75);
+  box-shadow: 0 0 0 3px rgba(240,192,48,.12), 0 0 24px rgba(240,192,48,.24);
+  transform: translateY(-2px);
+}
+
+.multi-pot-card.pot-ready-to-start {
+  border-color: rgba(111,207,58,.7);
+  box-shadow: 0 0 18px rgba(111,207,58,.18);
 }
 
 .multi-pot-card.pot-active:has(.pot-timer-ready) {
@@ -47,6 +62,17 @@
   font-size: .88rem;
 }
 
+.pot-slot-state {
+  font-size: .72rem;
+  color: #8aaa8c;
+  border: 1px solid rgba(168,224,106,.2);
+  border-radius: 999px;
+  padding: .12rem .45rem;
+  background: rgba(0,0,0,.18);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
 .pot-timer {
   font-size: .8rem;
   color: #a0a0a0;
@@ -59,7 +85,8 @@
 }
 
 /* Parents */
-.pot-parents {
+.pot-parents,
+.pot-selection-preview {
   display: flex;
   align-items: center;
   gap: .4rem;
@@ -68,14 +95,38 @@
   flex-wrap: wrap;
 }
 
-.pot-parent {
+.pot-selection-preview {
+  justify-content: center;
+  background: rgba(0,0,0,.18);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 10px;
+  padding: .45rem .5rem;
+}
+
+.pot-parent,
+.pot-parent-preview {
   background: rgba(255,255,255,.07);
   padding: .15rem .45rem;
   border-radius: 6px;
   font-size: .75rem;
 }
 
+.pot-parent-preview {
+  color: #d8f8c8;
+  max-width: 100%;
+}
+
 .pot-cross { opacity: .5; font-size: .85rem; }
+
+.pot-placement-helper {
+  font-size: .76rem;
+  line-height: 1.35;
+  color: #8aaa8c;
+  background: rgba(126,200,80,.06);
+  border: 1px solid rgba(126,200,80,.14);
+  border-radius: 10px;
+  padding: .45rem .55rem;
+}
 
 /* Visuel mini */
 .pot-visual-mini {
@@ -134,6 +185,12 @@
   padding: .3rem .5rem;
   font-size: .82rem;
   width: 100%;
+}
+
+.pot-select-label select:focus {
+  outline: none;
+  border-color: rgba(111,207,58,.72);
+  box-shadow: 0 0 0 3px rgba(111,207,58,.1);
 }
 
 /* Boutons */
