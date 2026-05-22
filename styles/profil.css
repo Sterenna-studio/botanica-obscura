@@ -103,6 +103,69 @@
 .stat-value { font-size: 1.4rem; font-weight: 700; color: #c8f080; }
 .stat-label { font-size: 0.75rem; color: rgba(180,220,160,0.6); margin-top: 0.25rem; }
 
+/* ── Historique découvertes */
+.profil-discovery-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0.75rem;
+}
+.profil-discovery-card {
+  display: grid;
+  grid-template-columns: 58px 1fr;
+  gap: 0.75rem;
+  align-items: center;
+  position: relative;
+  background: rgba(30,50,30,0.58);
+  border: 1px solid rgba(100,180,100,0.14);
+  border-radius: 12px;
+  padding: 0.7rem;
+  overflow: hidden;
+}
+.profil-discovery-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top left, rgba(144,208,96,0.12), transparent 48%);
+  pointer-events: none;
+}
+.profil-discovery-svg,
+.profil-discovery-info,
+.profil-discovery-first { position: relative; z-index: 1; }
+.profil-discovery-svg {
+  width: 58px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.22);
+  border-radius: 10px;
+}
+.profil-discovery-svg svg { width: 52px; height: 56px; }
+.profil-discovery-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+  min-width: 0;
+}
+.profil-discovery-info strong { color: #d8f8c0; font-size: 0.92rem; }
+.profil-discovery-info span { color: rgba(200,230,190,0.72); font-size: 0.78rem; }
+.profil-discovery-info small { color: rgba(180,220,160,0.45); font-size: 0.72rem; }
+.profil-discovery-first {
+  grid-column: 1 / -1;
+  justify-self: start;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #f0d060;
+  border: 1px solid rgba(240,208,96,0.28);
+  background: rgba(240,208,96,0.08);
+  border-radius: 999px;
+  padding: 0.18rem 0.55rem;
+}
+.profil-discovery-card.rarity-rare { border-color: rgba(80,140,220,0.36); }
+.profil-discovery-card.rarity-epic { border-color: rgba(160,80,220,0.42); }
+.profil-discovery-card.rarity-legendary { border-color: rgba(220,160,40,0.52); }
+.profil-discovery-card.rarity-mythic { border-color: rgba(220,60,60,0.58); box-shadow: 0 0 10px rgba(220,60,60,0.16); }
+
 /* ── Codex grid */
 .codex-progress-label {
   font-size: 0.82rem;
@@ -175,4 +238,5 @@
 @media (max-width: 520px) {
   .profil-card { flex-direction: column; align-items: center; text-align: center; }
   .profil-badges { justify-content: center; }
+  .profil-discovery-list { grid-template-columns: 1fr; }
 }
