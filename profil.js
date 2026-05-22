@@ -1,11 +1,13 @@
 import { supabase, restoreStarSession } from './lib/supabaseClient.js';
 import { onAuthReady, getBotanicaUserId } from './lib/auth.js';
+import { getProfile as getSharedProfile } from '/shared/profile.js';
 import { createPlantCharacterSvg } from './lib/plantSvg.js';
 import { getFallbackSpeciesTree } from './lib/speciesTree.js';
 import { QUALITY_TIERS } from './lib/quality.js';
 import { resolveLevel } from './lib/xp.js';
 
-const TOTAL_SPECIES = 32;
+// Déterminé dynamiquement depuis botanica_species — voir loadProfile()
+let TOTAL_SPECIES = 32;
 function fmt(n) { return Number(n ?? 0).toLocaleString('fr-FR'); }
 function timeAgo(iso) {
   const diff = Date.now() - new Date(iso).getTime();
@@ -17,14 +19,12 @@ function timeAgo(iso) {
 }
 
 async function loadProfile(userId) {
-  const [playerRes, profileRes, codexRes, salesRes, mutRes, firstRes] = await Promise.all([
+  const [playerRes, profileData, codexRes, salesRes, mutRes, firstRes] = await Promise.all([
     supabase.from('botanica_player_data')
       .select('coins, xp, level, created_at')
       .eq('user_id', userId).maybeSingle(),
 
-    supabase.from('profiles')
-      .select('username, avatar_url')
-      .eq('id', userId).maybeSingle(),
+    getSharedProfile(userId),
 
     supabase.from('botanica_player_codex')
       .select('species_id, was_first_server, unlocked_at')
@@ -47,7 +47,7 @@ async function loadProfile(userId) {
   ]);
 
   const player     = playerRes.data ?? {};
-  const profile    = profileRes.data ?? {};
+  const profile    = profileData ?? {};
   const codex      = codexRes.data ?? [];
   const sales      = salesRes.data ?? [];
   const mutCount   = mutRes.count ?? 0;
@@ -57,6 +57,7 @@ async function loadProfile(userId) {
     .from('botanica_species').select('*')
     .order('tier').order('id');
   const speciesList = speciesData?.length ? speciesData : getFallbackSpeciesTree();
+  TOTAL_SPECIES     = speciesList.length;
   const codexIds    = new Set(codex.map(c => c.species_id));
 
   renderIdentity({ ...player, username: profile.username, avatar_url: profile.avatar_url }, codex.length);
