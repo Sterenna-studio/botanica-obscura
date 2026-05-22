@@ -1,0 +1,10 @@
+# Local/private configuration
+.env
+.env.*
+config.js
+
+# Dependencies / build caches
+node_modules/
+.cache/
+dist/
+build/
