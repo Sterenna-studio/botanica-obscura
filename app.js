@@ -5,7 +5,7 @@ import { renderMutationTree } from './lib/mutationTree.js';
 import { loadInventory, renderInventory } from './lib/inventory.js';
 import { ensureTesters, renderTesters } from './lib/testers.js';
 import { restorePotNotification } from './lib/notifications.js';
-import { onAuthReady, getBotanicaUserId, isLoggedIn, requireAuth, getProfile } from './lib/auth.js';
+import { onAuthReady, getBotanicaUserId, requireAuth, getProfile } from './lib/auth.js';
 import { loadGarden, renderGarden, buyGardenEffect } from './lib/garden.js';
 import { loadPlayerData, renderPlayerStats } from './lib/playerData.js';
 import { QUALITY_TIERS } from './lib/quality.js';
@@ -22,6 +22,7 @@ import {
 import { initOnboarding } from './lib/onboarding.js';
 import { adjustLocalSeedQuantity, loadLocal, patchLocal } from './lib/localSave.js';
 import { showIntroIfNeeded } from './lib/intro.js';
+import { showDiscoveryNotice } from './lib/discoveryNotice.js';
 
 export { supabase };
 export function getUserId() { return getBotanicaUserId(); }
@@ -46,21 +47,8 @@ let currentGarden         = {};
 let currentPlayerData     = { coins: 0, level: 1, xp: 0, pot_slots: 1 };
 let codexControlsReady    = false;
 
-const codexFilters = {
-  tier: 'all',
-  rarity: 'all',
-  state: 'all',
-  search: '',
-};
-
-const RARITY_LABELS = {
-  common: 'Commune',
-  rare: 'Rare',
-  epic: 'Épique',
-  legendary: 'Légendaire',
-  mythic: 'Mythique',
-};
-
+const codexFilters = { tier: 'all', rarity: 'all', state: 'all', search: '' };
+const RARITY_LABELS = { common: 'Commune', rare: 'Rare', epic: 'Épique', legendary: 'Légendaire', mythic: 'Mythique' };
 window.__botanicaCodexIds = playerCodexIds;
 
 function escapeHtml(value) {
@@ -73,9 +61,8 @@ function escapeHtml(value) {
 }
 
 function showHarvestReveal(species, qualityTier, xpGained, isFirst, onClose) {
-  const overlay    = document.getElementById('harvest-reveal-overlay');
+  const overlay = document.getElementById('harvest-reveal-overlay');
   if (!overlay) { onClose?.(); return; }
-
   const firstBanner  = document.getElementById('harvest-reveal-first');
   const qualityBadge = document.getElementById('harvest-reveal-quality-badge');
   const svgEl        = document.getElementById('harvest-reveal-svg');
@@ -84,21 +71,15 @@ function showHarvestReveal(species, qualityTier, xpGained, isFirst, onClose) {
   const xpEl         = document.getElementById('harvest-reveal-xp');
   const closeBtn     = document.getElementById('harvest-reveal-close');
 
-  if (firstBanner)   firstBanner.style.display  = isFirst ? '' : 'none';
-  if (qualityBadge)  { qualityBadge.textContent = qualityTier.label; qualityBadge.style.color = qualityTier.color; }
-  if (svgEl)         svgEl.innerHTML = createPlantCharacterSvg(species);
-  if (nameEl)        nameEl.textContent = species.name ?? '???';
-  if (rarityEl)      rarityEl.innerHTML = `<span class="rarity-badge ${species.rarity ?? ''}">${species.rarity ?? '—'}</span>`;
-  if (xpEl)          xpEl.textContent = `+${xpGained} XP`;
+  if (firstBanner) firstBanner.style.display = isFirst ? '' : 'none';
+  if (qualityBadge) { qualityBadge.textContent = qualityTier.label; qualityBadge.style.color = qualityTier.color; }
+  if (svgEl) svgEl.innerHTML = createPlantCharacterSvg(species);
+  if (nameEl) nameEl.textContent = species.name ?? '???';
+  if (rarityEl) rarityEl.innerHTML = `<span class="rarity-badge ${species.rarity ?? ''}">${species.rarity ?? '—'}</span>`;
+  if (xpEl) xpEl.textContent = `+${xpGained} XP`;
 
   overlay.style.display = 'flex';
-
-  if (closeBtn) {
-    closeBtn.onclick = () => {
-      overlay.style.display = 'none';
-      onClose?.();
-    };
-  }
+  if (closeBtn) closeBtn.onclick = () => { overlay.style.display = 'none'; onClose?.(); };
 }
 
 function showLevelUpOverlay(newLevel, reward) {
@@ -118,7 +99,7 @@ async function loadSpecies() {
     .from('botanica_species')
     .select('*')
     .order('tier', { ascending: true })
-    .order('id',   { ascending: true });
+    .order('id', { ascending: true });
 
   const userId = getUserId();
   const { data: codexData, error: codexErr } = await supabase
@@ -139,16 +120,8 @@ async function loadSpecies() {
   window.__botanicaCodexIds = playerCodexIds;
 
   speciesList = (!globalErr && globalData?.length)
-    ? globalData.map(s => ({
-        ...s,
-        was_first_server: playerFirstServerIds.has(s.id),
-        discoverer_name: s.discovered_by_username,
-        discoverer_avatar: null,
-      }))
-    : getFallbackSpeciesTree().map(s => ({
-        ...s,
-        was_first_server: playerFirstServerIds.has(s.id),
-      }));
+    ? globalData.map(s => ({ ...s, was_first_server: playerFirstServerIds.has(s.id), discoverer_name: s.discovered_by_username, discoverer_avatar: null }))
+    : getFallbackSpeciesTree().map(s => ({ ...s, was_first_server: playerFirstServerIds.has(s.id) }));
 
   renderCodex();
   renderMutationTree(speciesList, playerCodexIds, renderPreview);
@@ -159,7 +132,7 @@ async function loadSpecies() {
 function renderPreview(species) {
   if (!species) return;
   plantCharacter.innerHTML = createPlantCharacterSvg(species);
-  plantDesc.textContent    = species.description || 'Aucune description.';
+  plantDesc.textContent = species.description || 'Aucune description.';
 }
 
 function getCodexState(species) {
@@ -168,13 +141,7 @@ function getCodexState(species) {
 }
 
 function getCodexSearchText(species) {
-  return [
-    species.name,
-    species.description,
-    species.rarity,
-    species.tier,
-    species.discoverer_name,
-  ].filter(Boolean).join(' ').toLowerCase();
+  return [species.name, species.description, species.rarity, species.tier, species.discoverer_name].filter(Boolean).join(' ').toLowerCase();
 }
 
 function getFilteredSpecies() {
@@ -192,10 +159,7 @@ function getFilteredSpecies() {
 function replaceSelectOptions(selectEl, options, firstLabel) {
   if (!selectEl) return;
   const previous = selectEl.value || 'all';
-  selectEl.innerHTML = [
-    `<option value="all">${firstLabel}</option>`,
-    ...options.map(({ value, label }) => `<option value="${escapeHtml(value)}">${escapeHtml(label)}</option>`),
-  ].join('');
+  selectEl.innerHTML = [`<option value="all">${firstLabel}</option>`, ...options.map(({ value, label }) => `<option value="${escapeHtml(value)}">${escapeHtml(label)}</option>`)].join('');
   selectEl.value = [...options.map(o => String(o.value)), 'all'].includes(previous) ? previous : 'all';
 }
 
@@ -203,11 +167,9 @@ function syncCodexFilterOptions() {
   const tiers = [...new Set(speciesList.map(s => s.tier).filter(v => v !== undefined && v !== null))]
     .sort((a, b) => Number(a) - Number(b))
     .map(tier => ({ value: String(tier), label: `Tier ${tier}` }));
-
   const rarities = [...new Set(speciesList.map(s => s.rarity).filter(Boolean))]
     .sort((a, b) => Object.keys(RARITY_LABELS).indexOf(a) - Object.keys(RARITY_LABELS).indexOf(b))
     .map(rarity => ({ value: rarity, label: RARITY_LABELS[rarity] ?? rarity }));
-
   replaceSelectOptions(codexTierFilter, tiers, 'Tous');
   replaceSelectOptions(codexRarityFilter, rarities, 'Toutes');
 }
@@ -220,13 +182,8 @@ function renderCodexSummary(visibleSpecies) {
   const unknown = Math.max(total - unlocked - serverKnown, 0);
   const firsts = speciesList.filter(s => playerFirstServerIds.has(s.id)).length;
   const percent = total > 0 ? Math.round((unlocked / total) * 100) : 0;
-
   codexSummary.innerHTML = `
-    <div class="codex-progress-card codex-progress-main">
-      <span class="codex-progress-value">${unlocked}/${total}</span>
-      <span class="codex-progress-label">Collection joueur</span>
-      <div class="codex-progress-bar" aria-hidden="true"><span style="width:${percent}%"></span></div>
-    </div>
+    <div class="codex-progress-card codex-progress-main"><span class="codex-progress-value">${unlocked}/${total}</span><span class="codex-progress-label">Collection joueur</span><div class="codex-progress-bar" aria-hidden="true"><span style="width:${percent}%"></span></div></div>
     <div class="codex-progress-card"><span class="codex-progress-value">${serverKnown}</span><span class="codex-progress-label">Connues serveur</span></div>
     <div class="codex-progress-card"><span class="codex-progress-value">${unknown}</span><span class="codex-progress-label">Mystères</span></div>
     <div class="codex-progress-card"><span class="codex-progress-value">${firsts}</span><span class="codex-progress-label">1ères mondiales</span></div>
@@ -241,39 +198,24 @@ function renderCodexCard(species) {
 
   if (state === 'unlocked') return `
     <article class="codex-card rarity-${escapeHtml(rarity)} state-unlocked" data-id="${escapeHtml(species.id)}" data-state="unlocked">
-      <div class="codex-card-topline">
-        <span class="codex-tier-pill">Tier ${escapeHtml(tier)}</span>
-        <span class="rarity-badge ${escapeHtml(rarity)}">${escapeHtml(rarityLabel)}</span>
-      </div>
+      <div class="codex-card-topline"><span class="codex-tier-pill">Tier ${escapeHtml(tier)}</span><span class="rarity-badge ${escapeHtml(rarity)}">${escapeHtml(rarityLabel)}</span></div>
       <div class="codex-sprite">${createPlantCharacterSvg(species)}</div>
-      <h3>${escapeHtml(species.name)}</h3>
-      <p>${escapeHtml(species.description || '')}</p>
+      <h3>${escapeHtml(species.name)}</h3><p>${escapeHtml(species.description || '')}</p>
       ${playerFirstServerIds.has(species.id) ? '<div class="first-discovery">🏅 1ère découverte serveur</div>' : ''}
     </article>`;
 
   if (state === 'server-known') return `
     <article class="codex-card state-server-known" data-id="${escapeHtml(species.id)}" data-state="server-known" title="Découverte par ${escapeHtml(species.discoverer_name ?? '???')}">
-      <div class="codex-card-topline">
-        <span class="codex-tier-pill">Tier ${escapeHtml(tier)}</span>
-        <span class="rarity-badge ${escapeHtml(rarity)}">${escapeHtml(rarityLabel)}</span>
-      </div>
+      <div class="codex-card-topline"><span class="codex-tier-pill">Tier ?</span><span class="rarity-badge ${escapeHtml(rarity)}">${escapeHtml(rarityLabel)}</span></div>
       <div class="codex-sprite codex-silhouette">${createPlantCharacterSvg(species)}</div>
       <h3 class="codex-unknown-name">Espèce observée</h3>
-      <div class="codex-server-badge">
-        ${species.discoverer_avatar ? `<img src="${escapeHtml(species.discoverer_avatar)}" class="codex-discoverer-avatar" alt="" />` : '🌐'}
-        <span>Découverte par <strong>${escapeHtml(species.discoverer_name ?? '???')}</strong></span>
-      </div>
+      <div class="codex-server-badge">${species.discoverer_avatar ? `<img src="${escapeHtml(species.discoverer_avatar)}" class="codex-discoverer-avatar" alt="" />` : '🌐'}<span>Découverte par <strong>${escapeHtml(species.discoverer_name ?? '???')}</strong></span></div>
     </article>`;
 
   return `
     <article class="codex-card state-unknown" data-id="${escapeHtml(species.id)}" data-state="unknown">
-      <div class="codex-card-topline">
-        <span class="codex-tier-pill">Tier ${escapeHtml(tier)}</span>
-        <span class="codex-state-pill">Inconnue</span>
-      </div>
-      <div class="codex-sprite codex-mystery">?</div>
-      <h3 class="codex-unknown-name">Espèce inconnue</h3>
-      <p>Mutation non répertoriée dans votre collection.</p>
+      <div class="codex-card-topline"><span class="codex-tier-pill">Tier ?</span><span class="codex-state-pill">Inconnue</span></div>
+      <div class="codex-sprite codex-mystery">?</div><h3 class="codex-unknown-name">Espèce inconnue</h3><p>Mutation non répertoriée dans votre collection.</p>
     </article>`;
 }
 
@@ -282,45 +224,25 @@ function renderCodex() {
   syncCodexFilterOptions();
   const visibleSpecies = getFilteredSpecies();
   renderCodexSummary(visibleSpecies);
-
   if (visibleSpecies.length === 0) {
     codexGrid.innerHTML = '<div class="codex-empty-state">Aucune espèce ne correspond aux filtres actuels.</div>';
     return;
   }
-
   codexGrid.innerHTML = visibleSpecies.map(renderCodexCard).join('');
   document.querySelectorAll('.codex-card.state-unlocked').forEach(card => {
-    card.addEventListener('click', () =>
-      renderPreview(speciesList.find(s => String(s.id) === card.dataset.id))
-    );
+    card.addEventListener('click', () => renderPreview(speciesList.find(s => String(s.id) === card.dataset.id)));
   });
 }
 
 function setupCodexControls() {
   if (codexControlsReady) return;
   codexControlsReady = true;
-
-  codexTierFilter?.addEventListener('change', () => {
-    codexFilters.tier = codexTierFilter.value;
-    renderCodex();
-  });
-  codexRarityFilter?.addEventListener('change', () => {
-    codexFilters.rarity = codexRarityFilter.value;
-    renderCodex();
-  });
-  codexStateFilter?.addEventListener('change', () => {
-    codexFilters.state = codexStateFilter.value;
-    renderCodex();
-  });
-  codexSearch?.addEventListener('input', () => {
-    codexFilters.search = codexSearch.value;
-    renderCodex();
-  });
+  codexTierFilter?.addEventListener('change', () => { codexFilters.tier = codexTierFilter.value; renderCodex(); });
+  codexRarityFilter?.addEventListener('change', () => { codexFilters.rarity = codexRarityFilter.value; renderCodex(); });
+  codexStateFilter?.addEventListener('change', () => { codexFilters.state = codexStateFilter.value; renderCodex(); });
+  codexSearch?.addEventListener('input', () => { codexFilters.search = codexSearch.value; renderCodex(); });
   codexResetFilters?.addEventListener('click', () => {
-    codexFilters.tier = 'all';
-    codexFilters.rarity = 'all';
-    codexFilters.state = 'all';
-    codexFilters.search = '';
+    codexFilters.tier = 'all'; codexFilters.rarity = 'all'; codexFilters.state = 'all'; codexFilters.search = '';
     if (codexTierFilter) codexTierFilter.value = 'all';
     if (codexRarityFilter) codexRarityFilter.value = 'all';
     if (codexStateFilter) codexStateFilter.value = 'all';
@@ -332,22 +254,15 @@ function setupCodexControls() {
 async function refreshInventory() {
   const seeds = await loadInventory(getUserId());
   updatePotsInventory(seeds);
-  renderInventory(
-    seeds,
-    (speciesId) => {
-      const selected = selectSpeciesForNextPot(speciesId);
-      if (!selected) {
-        console.warn('[app] Impossible de sélectionner cette graine dans un pot libre.');
-      }
-      return selected;
-    },
-    (newCoins) => {
-      currentPlayerData.coins = newCoins;
-      renderPlayerStats(currentPlayerData);
-      renderGarden(currentGarden, newCoins, onBuyGardenEffect);
-    },
-    getUserId()
-  );
+  renderInventory(seeds, (speciesId) => {
+    const selected = selectSpeciesForNextPot(speciesId);
+    if (!selected) console.warn('[app] Impossible de sélectionner cette graine dans un pot libre.');
+    return selected;
+  }, (newCoins) => {
+    currentPlayerData.coins = newCoins;
+    renderPlayerStats(currentPlayerData);
+    renderGarden(currentGarden, newCoins, onBuyGardenEffect);
+  }, getUserId());
 }
 
 async function refreshTesters() {
@@ -372,30 +287,25 @@ function showToast(msg, type = 'error') {
 }
 
 function applyLevelGating(level) {
-  const gardenSection  = document.getElementById('garden-section');
+  const gardenSection = document.getElementById('garden-section');
   const testersSection = document.getElementById('testers-section');
-  if (gardenSection)  gardenSection.style.display  = level >= 3 ? '' : 'none';
+  if (gardenSection) gardenSection.style.display = level >= 3 ? '' : 'none';
   if (testersSection) testersSection.style.display = level >= 3 ? '' : 'none';
 }
 
 function updateNextActionHint() {
   const hintEl = document.getElementById('next-action-hint');
   if (!hintEl) return;
-
   const activePotCards = document.querySelectorAll('.multi-pot-card.pot-active');
-  const readyPotCards  = document.querySelectorAll('.pot-harvest-btn');
-  const hasSeeds       = document.querySelectorAll('.inv-card').length > 0;
-  const emptyPotCards  = document.querySelectorAll('.multi-pot-card.pot-empty');
-
+  const readyPotCards = document.querySelectorAll('.pot-harvest-btn');
+  const hasSeeds = document.querySelectorAll('.inv-card').length > 0;
+  const emptyPotCards = document.querySelectorAll('.multi-pot-card.pot-empty');
   if (readyPotCards.length > 0) {
-    hintEl.textContent = '🌺 Un pot est prêt à récolter !';
-    hintEl.style.display = '';
+    hintEl.textContent = '🌺 Un pot est prêt à récolter !'; hintEl.style.display = '';
   } else if (activePotCards.length === 0 && hasSeeds && emptyPotCards.length > 0) {
-    hintEl.textContent = '🌱 Lance ta première mutation : sélectionne deux graines dans l\'inventaire puis clique "Lancer la mutation".';
-    hintEl.style.display = '';
+    hintEl.textContent = '🌱 Lance ta première mutation : sélectionne deux graines dans l\'inventaire puis clique "Lancer la mutation".'; hintEl.style.display = '';
   } else if (activePotCards.length === 0 && !hasSeeds) {
-    hintEl.textContent = '📦 Récupère ton colis mystère pour obtenir ta première graine !';
-    hintEl.style.display = '';
+    hintEl.textContent = '📦 Récupère ton colis mystère pour obtenir ta première graine !'; hintEl.style.display = '';
   } else {
     hintEl.style.display = 'none';
   }
@@ -404,7 +314,7 @@ function updateNextActionHint() {
 async function onBuyGardenEffect(effectId) {
   const result = await buyGardenEffect(getUserId(), effectId, currentPlayerData.coins, currentGarden);
   if (result.error) { showToast(result.error); return; }
-  currentGarden           = result.newGarden;
+  currentGarden = result.newGarden;
   currentPlayerData.coins = result.newCoins;
   updatePotsGarden(currentGarden);
   renderPlayerStats(currentPlayerData);
@@ -425,31 +335,19 @@ async function onHarvest(harvestResult, xpResult) {
     patchLocal('firstServerCodexIds', [...playerFirstServerIds]);
   }
 
-  currentPlayerData = {
-    ...currentPlayerData,
-    xp:        xpResult.newXp,
-    level:     xpResult.newLevel,
-    coins:     xpResult.newCoins,
-    pot_slots: xpResult.newPotSlots ?? currentPlayerData.pot_slots,
-  };
+  currentPlayerData = { ...currentPlayerData, xp: xpResult.newXp, level: xpResult.newLevel, coins: xpResult.newCoins, pot_slots: xpResult.newPotSlots ?? currentPlayerData.pot_slots };
   renderPlayerStats(currentPlayerData);
   applyLevelGating(currentPlayerData.level ?? 1);
   updatePotsPlayerData(currentPlayerData);
 
-  const xpGained = computeHarvestXp(
-    lastHarvestedSp?.rarity ?? 'common',
-    harvestResult.quality_tier_id ?? 1
-  );
+  const xpGained = computeHarvestXp(lastHarvestedSp?.rarity ?? 'common', harvestResult.quality_tier_id ?? 1);
   const quality = QUALITY_TIERS.find(t => t.id === harvestResult.quality_tier_id) ?? QUALITY_TIERS[1];
   const isFirst = harvestResult.first_server_discovery === true;
+  if (isFirst && lastHarvestedSp) showDiscoveryNotice(lastHarvestedSp);
 
-  showHarvestReveal(
-    lastHarvestedSp ?? { name: '???', rarity: 'common' },
-    quality,
-    xpGained,
-    isFirst,
-    () => { if (xpResult.leveledUp) showLevelUpOverlay(xpResult.newLevel, xpResult.reward); }
-  );
+  showHarvestReveal(lastHarvestedSp ?? { name: '???', rarity: 'common' }, quality, xpGained, isFirst, () => {
+    if (xpResult.leveledUp) showLevelUpOverlay(xpResult.newLevel, xpResult.reward);
+  });
 
   await Promise.all([loadSpecies(), refreshInventory(), refreshTesters()]);
   renderGarden(currentGarden, currentPlayerData.coins, onBuyGardenEffect);
@@ -461,7 +359,7 @@ if (notifBtn) {
     const { requestNotifPermission } = await import('./lib/notifications.js');
     const granted = await requestNotifPermission();
     notifBtn.textContent = granted ? '🔔 Notifs activées' : '🔕 Notifs refusées';
-    notifBtn.disabled    = granted;
+    notifBtn.disabled = granted;
   });
 }
 
@@ -469,39 +367,21 @@ async function init() {
   restorePotNotification();
   setupCodexControls();
   await restoreStarSession();
-
   const auth = await requireAuth('/login.html');
   if (!auth) return;
 
   onAuthReady(async () => {
     await getProfile();
     await showIntroIfNeeded();
-
     currentPlayerData = await loadPlayerData(getUserId());
     renderPlayerStats(currentPlayerData);
     applyLevelGating(currentPlayerData.level ?? 1);
     currentPlayerData.user_id = getUserId();
-
     await loadSpecies();
-
-    await Promise.all([
-      refreshInventory(),
-      refreshTesters(),
-      refreshGarden(),
-    ]);
-
-    // L'onboarding doit s'exécuter avant initPots pour que les graines soient
-    // en DB avant le premier render des selects de pots.
-    await initOnboarding(getUserId(), async () => {
-      await refreshInventory();
-    });
+    await Promise.all([refreshInventory(), refreshTesters(), refreshGarden()]);
+    await initOnboarding(getUserId(), async () => { await refreshInventory(); });
     await initPots(speciesList, currentPlayerData, onHarvest, currentGarden, refreshInventory);
-
-    initMysterySeed(async () => {
-      await refreshInventory();
-      updateNextActionHint();
-    });
-
+    initMysterySeed(async () => { await refreshInventory(); updateNextActionHint(); }, () => currentPlayerData.level ?? 1);
     updateNextActionHint();
   });
 }
