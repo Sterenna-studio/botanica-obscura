@@ -26,19 +26,51 @@ import { showIntroIfNeeded } from './lib/intro.js';
 export { supabase };
 export function getUserId() { return getBotanicaUserId(); }
 
-const codexGrid      = document.getElementById('codexGrid');
-const plantCharacter = document.getElementById('plantCharacter');
-const plantDesc      = document.getElementById('plantDescription');
-const notifBtn       = document.getElementById('notifBtn');
+const codexGrid         = document.getElementById('codexGrid');
+const codexSummary      = document.getElementById('codexSummary');
+const codexTierFilter   = document.getElementById('codexTierFilter');
+const codexRarityFilter = document.getElementById('codexRarityFilter');
+const codexStateFilter  = document.getElementById('codexStateFilter');
+const codexSearch       = document.getElementById('codexSearch');
+const codexResetFilters = document.getElementById('codexResetFilters');
+const plantCharacter    = document.getElementById('plantCharacter');
+const plantDesc         = document.getElementById('plantDescription');
+const notifBtn          = document.getElementById('notifBtn');
 
-let speciesList       = [];
-let playerCodexIds    = new Set();
-let testers           = [];
-let lastHarvestedSp   = null;
-let currentGarden     = {};
-let currentPlayerData = { coins: 0, level: 1, xp: 0, pot_slots: 1 };
+let speciesList           = [];
+let playerCodexIds        = new Set();
+let playerFirstServerIds  = new Set();
+let testers               = [];
+let lastHarvestedSp       = null;
+let currentGarden         = {};
+let currentPlayerData     = { coins: 0, level: 1, xp: 0, pot_slots: 1 };
+let codexControlsReady    = false;
+
+const codexFilters = {
+  tier: 'all',
+  rarity: 'all',
+  state: 'all',
+  search: '',
+};
+
+const RARITY_LABELS = {
+  common: 'Commune',
+  rare: 'Rare',
+  epic: 'Épique',
+  legendary: 'Légendaire',
+  mythic: 'Mythique',
+};
 
 window.__botanicaCodexIds = playerCodexIds;
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
 
 function showHarvestReveal(species, qualityTier, xpGained, isFirst, onClose) {
   const overlay    = document.getElementById('harvest-reveal-overlay');
@@ -97,19 +129,26 @@ async function loadSpecies() {
   if (codexErr) {
     console.warn('[app] Chargement codex cloud échoué, fallback local :', codexErr.message);
     playerCodexIds = new Set(loadLocal()?.codexIds ?? []);
+    playerFirstServerIds = new Set(loadLocal()?.firstServerCodexIds ?? []);
   } else {
     playerCodexIds = new Set((codexData ?? []).map(r => r.species_id));
+    playerFirstServerIds = new Set((codexData ?? []).filter(r => r.was_first_server).map(r => r.species_id));
     patchLocal('codexIds', [...playerCodexIds]);
+    patchLocal('firstServerCodexIds', [...playerFirstServerIds]);
   }
   window.__botanicaCodexIds = playerCodexIds;
 
   speciesList = (!globalErr && globalData?.length)
     ? globalData.map(s => ({
         ...s,
+        was_first_server: playerFirstServerIds.has(s.id),
         discoverer_name: s.discovered_by_username,
         discoverer_avatar: null,
       }))
-    : getFallbackSpeciesTree();
+    : getFallbackSpeciesTree().map(s => ({
+        ...s,
+        was_first_server: playerFirstServerIds.has(s.id),
+      }));
 
   renderCodex();
   renderMutationTree(speciesList, playerCodexIds, renderPreview);
@@ -123,39 +162,170 @@ function renderPreview(species) {
   plantDesc.textContent    = species.description || 'Aucune description.';
 }
 
+function getCodexState(species) {
+  if (playerCodexIds.has(species.id)) return 'unlocked';
+  return species.discovered_by ? 'server-known' : 'unknown';
+}
+
+function getCodexSearchText(species) {
+  return [
+    species.name,
+    species.description,
+    species.rarity,
+    species.tier,
+    species.discoverer_name,
+  ].filter(Boolean).join(' ').toLowerCase();
+}
+
+function getFilteredSpecies() {
+  const search = codexFilters.search.trim().toLowerCase();
+  return speciesList.filter(s => {
+    const state = getCodexState(s);
+    if (codexFilters.tier !== 'all' && String(s.tier) !== codexFilters.tier) return false;
+    if (codexFilters.rarity !== 'all' && String(s.rarity) !== codexFilters.rarity) return false;
+    if (codexFilters.state !== 'all' && state !== codexFilters.state) return false;
+    if (search && !getCodexSearchText(s).includes(search)) return false;
+    return true;
+  });
+}
+
+function replaceSelectOptions(selectEl, options, firstLabel) {
+  if (!selectEl) return;
+  const previous = selectEl.value || 'all';
+  selectEl.innerHTML = [
+    `<option value="all">${firstLabel}</option>`,
+    ...options.map(({ value, label }) => `<option value="${escapeHtml(value)}">${escapeHtml(label)}</option>`),
+  ].join('');
+  selectEl.value = [...options.map(o => String(o.value)), 'all'].includes(previous) ? previous : 'all';
+}
+
+function syncCodexFilterOptions() {
+  const tiers = [...new Set(speciesList.map(s => s.tier).filter(v => v !== undefined && v !== null))]
+    .sort((a, b) => Number(a) - Number(b))
+    .map(tier => ({ value: String(tier), label: `Tier ${tier}` }));
+
+  const rarities = [...new Set(speciesList.map(s => s.rarity).filter(Boolean))]
+    .sort((a, b) => Object.keys(RARITY_LABELS).indexOf(a) - Object.keys(RARITY_LABELS).indexOf(b))
+    .map(rarity => ({ value: rarity, label: RARITY_LABELS[rarity] ?? rarity }));
+
+  replaceSelectOptions(codexTierFilter, tiers, 'Tous');
+  replaceSelectOptions(codexRarityFilter, rarities, 'Toutes');
+}
+
+function renderCodexSummary(visibleSpecies) {
+  if (!codexSummary) return;
+  const total = speciesList.length;
+  const unlocked = speciesList.filter(s => getCodexState(s) === 'unlocked').length;
+  const serverKnown = speciesList.filter(s => getCodexState(s) === 'server-known').length;
+  const unknown = Math.max(total - unlocked - serverKnown, 0);
+  const firsts = speciesList.filter(s => playerFirstServerIds.has(s.id)).length;
+  const percent = total > 0 ? Math.round((unlocked / total) * 100) : 0;
+
+  codexSummary.innerHTML = `
+    <div class="codex-progress-card codex-progress-main">
+      <span class="codex-progress-value">${unlocked}/${total}</span>
+      <span class="codex-progress-label">Collection joueur</span>
+      <div class="codex-progress-bar" aria-hidden="true"><span style="width:${percent}%"></span></div>
+    </div>
+    <div class="codex-progress-card"><span class="codex-progress-value">${serverKnown}</span><span class="codex-progress-label">Connues serveur</span></div>
+    <div class="codex-progress-card"><span class="codex-progress-value">${unknown}</span><span class="codex-progress-label">Mystères</span></div>
+    <div class="codex-progress-card"><span class="codex-progress-value">${firsts}</span><span class="codex-progress-label">1ères mondiales</span></div>
+    <div class="codex-progress-card"><span class="codex-progress-value">${visibleSpecies.length}</span><span class="codex-progress-label">Affichées</span></div>`;
+}
+
+function renderCodexCard(species) {
+  const state = getCodexState(species);
+  const rarity = species.rarity ?? 'common';
+  const tier = species.tier ?? '—';
+  const rarityLabel = RARITY_LABELS[rarity] ?? rarity;
+
+  if (state === 'unlocked') return `
+    <article class="codex-card rarity-${escapeHtml(rarity)} state-unlocked" data-id="${escapeHtml(species.id)}" data-state="unlocked">
+      <div class="codex-card-topline">
+        <span class="codex-tier-pill">Tier ${escapeHtml(tier)}</span>
+        <span class="rarity-badge ${escapeHtml(rarity)}">${escapeHtml(rarityLabel)}</span>
+      </div>
+      <div class="codex-sprite">${createPlantCharacterSvg(species)}</div>
+      <h3>${escapeHtml(species.name)}</h3>
+      <p>${escapeHtml(species.description || '')}</p>
+      ${playerFirstServerIds.has(species.id) ? '<div class="first-discovery">🏅 1ère découverte serveur</div>' : ''}
+    </article>`;
+
+  if (state === 'server-known') return `
+    <article class="codex-card state-server-known" data-id="${escapeHtml(species.id)}" data-state="server-known" title="Découverte par ${escapeHtml(species.discoverer_name ?? '???')}">
+      <div class="codex-card-topline">
+        <span class="codex-tier-pill">Tier ${escapeHtml(tier)}</span>
+        <span class="rarity-badge ${escapeHtml(rarity)}">${escapeHtml(rarityLabel)}</span>
+      </div>
+      <div class="codex-sprite codex-silhouette">${createPlantCharacterSvg(species)}</div>
+      <h3 class="codex-unknown-name">Espèce observée</h3>
+      <div class="codex-server-badge">
+        ${species.discoverer_avatar ? `<img src="${escapeHtml(species.discoverer_avatar)}" class="codex-discoverer-avatar" alt="" />` : '🌐'}
+        <span>Découverte par <strong>${escapeHtml(species.discoverer_name ?? '???')}</strong></span>
+      </div>
+    </article>`;
+
+  return `
+    <article class="codex-card state-unknown" data-id="${escapeHtml(species.id)}" data-state="unknown">
+      <div class="codex-card-topline">
+        <span class="codex-tier-pill">Tier ${escapeHtml(tier)}</span>
+        <span class="codex-state-pill">Inconnue</span>
+      </div>
+      <div class="codex-sprite codex-mystery">?</div>
+      <h3 class="codex-unknown-name">Espèce inconnue</h3>
+      <p>Mutation non répertoriée dans votre collection.</p>
+    </article>`;
+}
+
 function renderCodex() {
-  codexGrid.innerHTML = speciesList.map(s => {
-    const state = playerCodexIds.has(s.id) ? 'unlocked'
-      : s.discovered_by ? 'server-known' : 'unknown';
-    if (state === 'unlocked') return `
-      <article class="codex-card rarity-${s.rarity} state-unlocked" data-id="${s.id}">
-        <div class="codex-sprite">${createPlantCharacterSvg(s)}</div>
-        <h3>${s.name}</h3>
-        <div class="codex-meta">Tier ${s.tier} • <span class="rarity-badge ${s.rarity}">${s.rarity}</span></div>
-        <p>${s.description || ''}</p>
-        ${s.was_first_server ? '<div class="first-discovery">🏅 1ère découverte serveur</div>' : ''}
-      </article>`;
-    if (state === 'server-known') return `
-      <article class="codex-card state-server-known" data-id="${s.id}" title="Découverte par ${s.discoverer_name ?? '???'}">
-        <div class="codex-sprite codex-silhouette">${createPlantCharacterSvg(s)}</div>
-        <h3 class="codex-unknown-name">???</h3>
-        <div class="codex-meta">Tier ${s.tier} • <span class="rarity-badge ${s.rarity}">${s.rarity}</span></div>
-        <div class="codex-server-badge">
-          ${s.discoverer_avatar ? `<img src="${s.discoverer_avatar}" class="codex-discoverer-avatar" alt="" />` : '🌐'}
-          <span>Découverte par <strong>${s.discoverer_name ?? '???'}</strong></span>
-        </div>
-      </article>`;
-    return `
-      <article class="codex-card state-unknown" data-id="${s.id}">
-        <div class="codex-sprite codex-mystery">?</div>
-        <h3 class="codex-unknown-name">Espèce inconnue</h3>
-        <div class="codex-meta">Tier ${s.tier}</div>
-      </article>`;
-  }).join('');
+  if (!codexGrid) return;
+  syncCodexFilterOptions();
+  const visibleSpecies = getFilteredSpecies();
+  renderCodexSummary(visibleSpecies);
+
+  if (visibleSpecies.length === 0) {
+    codexGrid.innerHTML = '<div class="codex-empty-state">Aucune espèce ne correspond aux filtres actuels.</div>';
+    return;
+  }
+
+  codexGrid.innerHTML = visibleSpecies.map(renderCodexCard).join('');
   document.querySelectorAll('.codex-card.state-unlocked').forEach(card => {
     card.addEventListener('click', () =>
       renderPreview(speciesList.find(s => String(s.id) === card.dataset.id))
     );
+  });
+}
+
+function setupCodexControls() {
+  if (codexControlsReady) return;
+  codexControlsReady = true;
+
+  codexTierFilter?.addEventListener('change', () => {
+    codexFilters.tier = codexTierFilter.value;
+    renderCodex();
+  });
+  codexRarityFilter?.addEventListener('change', () => {
+    codexFilters.rarity = codexRarityFilter.value;
+    renderCodex();
+  });
+  codexStateFilter?.addEventListener('change', () => {
+    codexFilters.state = codexStateFilter.value;
+    renderCodex();
+  });
+  codexSearch?.addEventListener('input', () => {
+    codexFilters.search = codexSearch.value;
+    renderCodex();
+  });
+  codexResetFilters?.addEventListener('click', () => {
+    codexFilters.tier = 'all';
+    codexFilters.rarity = 'all';
+    codexFilters.state = 'all';
+    codexFilters.search = '';
+    if (codexTierFilter) codexTierFilter.value = 'all';
+    if (codexRarityFilter) codexRarityFilter.value = 'all';
+    if (codexStateFilter) codexStateFilter.value = 'all';
+    if (codexSearch) codexSearch.value = '';
+    renderCodex();
   });
 }
 
@@ -249,8 +419,10 @@ async function onHarvest(harvestResult, xpResult) {
   if (lastHarvestedSp?.id) {
     adjustLocalSeedQuantity(lastHarvestedSp.id, harvestResult.seed_quantity_delta ?? 1);
     playerCodexIds.add(lastHarvestedSp.id);
+    if (harvestResult.first_server_discovery === true) playerFirstServerIds.add(lastHarvestedSp.id);
     window.__botanicaCodexIds = playerCodexIds;
     patchLocal('codexIds', [...playerCodexIds]);
+    patchLocal('firstServerCodexIds', [...playerFirstServerIds]);
   }
 
   currentPlayerData = {
@@ -295,6 +467,7 @@ if (notifBtn) {
 
 async function init() {
   restorePotNotification();
+  setupCodexControls();
   await restoreStarSession();
 
   const auth = await requireAuth('/login.html');
