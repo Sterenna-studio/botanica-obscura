@@ -1,6 +1,6 @@
 # Botanica Obscura — Roadmap
 
-## Version actuelle : V0.3 (prochaine étape)
+## Version actuelle : V0.3 — Collection & Codex
 
 V0.2 complète. Boucle stable : connexion Nitro → onboarding → colis mystère → mutation → récolte avec overlay → progression XP/niveau.
 
@@ -19,6 +19,8 @@ Objectif : **un joueur se connecte, comprend, plante, récolte, progresse, revie
 ### Onboarding
 - [x] Tutoriel en 3 étapes : règles → choix graines → guide premier pot
 - [x] Hint contextuel `#next-action-hint` (graines dispo, pot prêt, colis mystère)
+- [x] Flag `onboarding_completed` pour éviter de redonner les graines de départ
+- [x] Tier/rareté masqués pendant le choix initial des graines
 
 ### UI — Hiérarchie en zones
 - [x] **Zone principale** (toujours visible) : pots + colis mystère + prévisualisation
@@ -26,6 +28,8 @@ Objectif : **un joueur se connecte, comprend, plante, récolte, progresse, revie
 - [x] **Zone collection** (dépliable) : codex, arbre des mutations
 - [x] Remplacer `alert()` dans `onBuyGardenEffect` par toast
 - [x] **Overlay récolte** : carte reveal avec qualité colorée, SVG plante, XP, badge 1ère mondiale
+- [x] UX pots améliorée : placement guidé des graines, aperçu A/B, validation avant lancement
+- [x] Graines rendues sans visage dans l'inventaire
 
 ### Progression gated par niveau
 - [x] Jardin masqué avant Lv3
@@ -46,13 +50,21 @@ Objectif : **un joueur se connecte, comprend, plante, récolte, progresse, revie
 
 ---
 
-## V0.3 — Collection & Codex
+## V0.3 — Collection & Codex ✅ *en consolidation*
 
-- Codex redesigné : filtres par tier/rareté, compteur de découvertes
-- "Découverte serveur" mise en valeur (bannière, notification globale)
-- Raretés plus lisibles visuellement (bordures colorées, badges)
-- Historique des découvertes joueur (page profil)
-- Set 1 planté : 10 espèces Tier 2 disponibles
+- [x] Codex redesigné : filtres par tier/rareté/état, recherche, compteur de découvertes
+- [x] Raretés plus lisibles visuellement (bordures, badges, résumé collection)
+- [x] "Découverte serveur" mise en valeur : overlay récolte + notice visuelle première serveur
+- [x] Historique des découvertes joueur sur la page profil
+- [x] Set 1 planté : 10 espèces Tier 2 dans le fallback et migration SQL
+- [x] Colis mystère amélioré à partir du niveau 2 côté front (`improved_pool`, `player_level` envoyés à l'Edge Function)
+
+### À vérifier / finaliser côté backend Supabase
+- [ ] Exécuter `sql/fix_v0.2_schema_drift.sql`
+- [ ] Exécuter `sql/add_onboarding_completed_flag.sql`
+- [ ] Exécuter `sql/seed_v0.3_tier2_species.sql`
+- [ ] Vérifier que l'Edge Function `harvest-mutation` respecte les couples `parent_a_id` / `parent_b_id` pour le Set 1
+- [ ] Vérifier que l'Edge Function `claim-mystery-seed` utilise `player_level` / `improved_pool` pour élargir le pool Lv2
 
 ---
 
