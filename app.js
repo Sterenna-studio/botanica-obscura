@@ -317,10 +317,12 @@ async function init() {
       refreshGarden(),
     ]);
 
-    await initPots(speciesList, currentPlayerData, onHarvest, currentGarden, refreshInventory);
+    // L'onboarding doit s'exécuter avant initPots pour que les graines soient
+    // en DB avant le premier render des selects de pots.
     await initOnboarding(getUserId(), async () => {
       await refreshInventory();
     });
+    await initPots(speciesList, currentPlayerData, onHarvest, currentGarden, refreshInventory);
 
     initMysterySeed(async () => {
       await refreshInventory();
