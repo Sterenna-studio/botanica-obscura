@@ -1,4 +1,4 @@
-import { supabase, restoreStarSession } from './lib/supabaseClient.js';
+import { supabase } from './lib/supabaseClient.js';
 import { onAuthReady, getBotanicaUserId } from './lib/auth.js';
 import { getProfile as getSharedProfile } from '/shared/profile.js';
 import { createPlantCharacterSvg } from './lib/plantSvg.js';
@@ -139,7 +139,6 @@ function renderSales(sales, speciesList) {
 }
 
 async function init() {
-  await restoreStarSession();
   onAuthReady(() => {
     const userId = getBotanicaUserId();
     if (!userId) {

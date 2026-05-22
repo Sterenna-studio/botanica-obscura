@@ -1,40 +1,42 @@
 # Botanica Obscura — Roadmap
 
-## Version actuelle : V0.2 (en cours)
+## Version actuelle : V0.3 (prochaine étape)
 
-Boucle complète codée, auth Nitro branchée, toutes les tables Supabase en place.
-État : jouable mais pas encore stable UX / pas de hiérarchie claire.
+V0.2 complète. Boucle stable : connexion Nitro → onboarding → colis mystère → mutation → récolte avec overlay → progression XP/niveau.
 
 ---
 
-## V0.2 — Stable Core *(chantier actuel)*
+## V0.2 — Stable Core ✅ *complète*
 
 Objectif : **un joueur se connecte, comprend, plante, récolte, progresse, revient demain.**
 
 ### Auth & identité Nitro
 - [x] Header affiche le badge Nitro (`#userBadge`, avatar, pseudo)
 - [x] Lien "← Star" dans la topbar
-- [ ] Redirection login via `/login.html` si session absente (déjà codé, à vérifier en prod)
+- [x] Redirection login via `/login.html` si session absente
+- [x] `display_name` + `avatar_url` synchronisés vers `botanica_player_data` à chaque login
 
 ### Onboarding
 - [x] Tutoriel en 3 étapes : règles → choix graines → guide premier pot
 - [x] Hint contextuel `#next-action-hint` (graines dispo, pot prêt, colis mystère)
-- [ ] Colis mystère proposé dès l'onboarding si premier démarrage (step 3 pointe dessus)
 
 ### UI — Hiérarchie en zones
 - [x] **Zone principale** (toujours visible) : pots + colis mystère + prévisualisation
 - [x] **Zone secondaire** (dépliable) : inventaire ouvert par défaut, jardin, testeurs
 - [x] **Zone collection** (dépliable) : codex, arbre des mutations
 - [x] Remplacer `alert()` dans `onBuyGardenEffect` par toast
+- [x] **Overlay récolte** : carte reveal avec qualité colorée, SVG plante, XP, badge 1ère mondiale
 
 ### Progression gated par niveau
 - [x] Jardin masqué avant Lv3
 - [x] Testeurs masqués avant Lv3
-- [ ] Colis mystère amélioré débloqué à Lv2 (label visible dès Lv1)
 - [x] Prochain slot verrouillé visible (grisé) avec niveau requis affiché
 
 ### Bug critique
 - [x] `lib/mutation.js` — suppression import `config.js` + ajout header auth manquant sur `harvestMutation`
+- [x] `lib/mysterySeed.js` — session Nitro partagée au lieu de `supabase.auth.getSession()`
+- [x] `lib/authModal.js` — supprimé (obsolète, auth centralisée sur Nitro `/login.html`)
+- [x] XP source unique : `resolveLevel()` dans `xp.js` utilisé partout (playerData, profil)
 
 ### Docs
 - [x] `docs/roadmap.md`

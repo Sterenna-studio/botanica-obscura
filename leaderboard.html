@@ -6,16 +6,18 @@
   <title>Botanica Obscura — Classement</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="styles/leaderboard.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
   <header class="topbar">
-    <div>
-      <h1>🌿 Botanica Obscura</h1>
-      <p class="subtitle">Classement des Botanistes</p>
+    <div class="topbar-left">
+      <a href="/star/" class="back-to-star">← Star</a>
+      <div class="topbar-title">
+        <h1>🌿 Botanica Obscura</h1>
+        <p class="subtitle">Classement des Botanistes</p>
+      </div>
     </div>
     <div class="player-stats">
-      <a href="index.html" class="nav-link">← Retour au jardin</a>
+      <a href="index.html" class="nav-link">🌱 Retour au jardin</a>
     </div>
   </header>
 
@@ -44,7 +46,7 @@
       </tbody>
     </table>
 
-    <p id="lb-empty" class="lb-empty" hidden>Aucun botaniste classé pour l’instant. Soyez le premier !</p>
+    <p id="lb-empty" class="lb-empty" hidden>Aucun botaniste classé pour l'instant. Soyez le premier !</p>
     <p id="lb-error" class="lb-error" hidden>Erreur de chargement. Vérifiez votre connexion.</p>
   </main>
 

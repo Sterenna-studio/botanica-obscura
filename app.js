@@ -40,6 +40,35 @@ let currentPlayerData = { coins: 0, level: 1, xp: 0, pot_slots: 1 };
 
 window.__botanicaCodexIds = playerCodexIds;
 
+function showHarvestReveal(species, qualityTier, xpGained, isFirst, onClose) {
+  const overlay    = document.getElementById('harvest-reveal-overlay');
+  if (!overlay) { onClose?.(); return; }
+
+  const firstBanner  = document.getElementById('harvest-reveal-first');
+  const qualityBadge = document.getElementById('harvest-reveal-quality-badge');
+  const svgEl        = document.getElementById('harvest-reveal-svg');
+  const nameEl       = document.getElementById('harvest-reveal-name');
+  const rarityEl     = document.getElementById('harvest-reveal-rarity');
+  const xpEl         = document.getElementById('harvest-reveal-xp');
+  const closeBtn     = document.getElementById('harvest-reveal-close');
+
+  if (firstBanner)   firstBanner.style.display  = isFirst ? '' : 'none';
+  if (qualityBadge)  { qualityBadge.textContent = qualityTier.label; qualityBadge.style.color = qualityTier.color; }
+  if (svgEl)         svgEl.innerHTML = createPlantCharacterSvg(species);
+  if (nameEl)        nameEl.textContent = species.name ?? '???';
+  if (rarityEl)      rarityEl.innerHTML = `<span class="rarity-badge ${species.rarity ?? ''}">${species.rarity ?? '—'}</span>`;
+  if (xpEl)          xpEl.textContent = `+${xpGained} XP`;
+
+  overlay.style.display = 'flex';
+
+  if (closeBtn) {
+    closeBtn.onclick = () => {
+      overlay.style.display = 'none';
+      onClose?.();
+    };
+  }
+}
+
 function showLevelUpOverlay(newLevel, reward) {
   const overlay  = document.getElementById('levelup-overlay');
   const levelEl  = document.getElementById('levelup-level');
@@ -239,25 +268,16 @@ async function onHarvest(harvestResult, xpResult) {
     lastHarvestedSp?.rarity ?? 'common',
     harvestResult.quality_tier_id ?? 1
   );
-  const quality  = QUALITY_TIERS.find(t => t.id === harvestResult.quality_tier_id) ?? QUALITY_TIERS[1];
-  const firstMsg = harvestResult.first_server_discovery ? ' 🏅 PREMIÈRE MONDIALE !' : '';
+  const quality = QUALITY_TIERS.find(t => t.id === harvestResult.quality_tier_id) ?? QUALITY_TIERS[1];
+  const isFirst = harvestResult.first_server_discovery === true;
 
-  let tc = document.getElementById('toast-container');
-  if (!tc) { tc = document.createElement('div'); tc.id = 'toast-container'; document.body.appendChild(tc); }
-
-  const toastHarvest = document.createElement('div');
-  toastHarvest.className   = 'toast toast-success toast-visible';
-  toastHarvest.textContent = `🌺 ${lastHarvestedSp?.name} (${lastHarvestedSp?.rarity}) — ${quality.label}${firstMsg}`;
-  tc.appendChild(toastHarvest);
-  setTimeout(() => { toastHarvest.classList.remove('toast-visible'); toastHarvest.addEventListener('transitionend', () => toastHarvest.remove(), { once: true }); }, 3500);
-
-  const toastXp = document.createElement('div');
-  toastXp.className   = 'toast toast-xp toast-visible';
-  toastXp.textContent = `+${xpGained} XP`;
-  tc.appendChild(toastXp);
-  setTimeout(() => { toastXp.classList.remove('toast-visible'); toastXp.addEventListener('transitionend', () => toastXp.remove(), { once: true }); }, 2000);
-
-  if (xpResult.leveledUp) showLevelUpOverlay(xpResult.newLevel, xpResult.reward);
+  showHarvestReveal(
+    lastHarvestedSp ?? { name: '???', rarity: 'common' },
+    quality,
+    xpGained,
+    isFirst,
+    () => { if (xpResult.leveledUp) showLevelUpOverlay(xpResult.newLevel, xpResult.reward); }
+  );
 
   await Promise.all([loadSpecies(), refreshInventory(), refreshTesters()]);
   renderGarden(currentGarden, currentPlayerData.coins, onBuyGardenEffect);
