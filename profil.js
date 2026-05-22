@@ -7,9 +7,10 @@ import { QUALITY_TIERS } from './lib/quality.js';
 import { resolveLevel } from './lib/xp.js';
 
 // Déterminé dynamiquement depuis botanica_species — voir loadProfile()
-let TOTAL_SPECIES = 32;
+let TOTAL_SPECIES = 33;
 function fmt(n) { return Number(n ?? 0).toLocaleString('fr-FR'); }
 function timeAgo(iso) {
+  if (!iso) return 'date inconnue';
   const diff = Date.now() - new Date(iso).getTime();
   const d = Math.floor(diff / 86400000);
   const h = Math.floor((diff % 86400000) / 3600000);
@@ -27,7 +28,7 @@ async function loadProfile(userId) {
     getSharedProfile(userId),
 
     supabase.from('botanica_player_codex')
-      .select('species_id, was_first_server, unlocked_at')
+      .select('species_id, was_first_server, discovered_at, unlocked_at')
       .eq('user_id', userId),
 
     supabase.from('botanica_npc_sales_log')
@@ -62,6 +63,7 @@ async function loadProfile(userId) {
 
   renderIdentity({ ...player, username: profile.username, avatar_url: profile.avatar_url }, codex.length);
   renderStats(mutCount, sales, firstCount);
+  renderDiscoveries(codex, speciesList);
   renderCodex(speciesList, codexIds, codex);
   renderSales(sales, speciesList);
 }
@@ -100,6 +102,36 @@ function renderStats(mutCount, sales, firstCount) {
   document.getElementById('stat-first').textContent     = fmt(firstCount);
 }
 
+function renderDiscoveries(codexRows, speciesList) {
+  const container = document.getElementById('profil-discovery-list');
+  if (!container) return;
+
+  const speciesMap = Object.fromEntries(speciesList.map(s => [s.id, s]));
+  const rows = [...codexRows]
+    .sort((a, b) => new Date(b.discovered_at ?? b.unlocked_at ?? 0) - new Date(a.discovered_at ?? a.unlocked_at ?? 0))
+    .slice(0, 12);
+
+  if (!rows.length) {
+    container.innerHTML = '<div class="table-empty">Aucune découverte pour l\'instant.</div>';
+    return;
+  }
+
+  container.innerHTML = rows.map(row => {
+    const sp = speciesMap[row.species_id];
+    const date = row.discovered_at ?? row.unlocked_at;
+    return `
+      <article class="profil-discovery-card rarity-${sp?.rarity ?? 'common'}">
+        <div class="profil-discovery-svg">${sp ? createPlantCharacterSvg(sp) : '<span>?</span>'}</div>
+        <div class="profil-discovery-info">
+          <strong>${sp?.name ?? 'Espèce inconnue'}</strong>
+          <span>Tier ${sp?.tier ?? '?'} • <span class="rarity-badge ${sp?.rarity ?? ''}">${sp?.rarity ?? '—'}</span></span>
+          <small>${timeAgo(date)}</small>
+        </div>
+        ${row.was_first_server ? '<div class="profil-discovery-first">🏅 Première serveur</div>' : ''}
+      </article>`;
+  }).join('');
+}
+
 function renderCodex(speciesList, codexIds, codexRows) {
   const firstIds = new Set(codexRows.filter(r => r.was_first_server).map(r => r.species_id));
   const label = document.getElementById('codex-progress-label');
@@ -109,7 +141,7 @@ function renderCodex(speciesList, codexIds, codexRows) {
     if (!codexIds.has(s.id)) {
       return `<div class="profil-codex-slot unknown" title="Inconnue">
         <div class="slot-mystery">?</div>
-        <div class="slot-tier">T${s.tier}</div>
+        <div class="slot-tier">T?</div>
       </div>`;
     }
     return `<div class="profil-codex-slot rarity-${s.rarity}" title="${s.name}">
