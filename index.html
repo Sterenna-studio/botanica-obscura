@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="styles/pots.css" />
     <link rel="stylesheet" href="styles/onboarding.css" />
     <link rel="stylesheet" href="styles/intro.css" />
+    <link rel="stylesheet" href="styles/codex.css" />
   </head>
   <body>
     <header class="topbar">
@@ -136,10 +137,42 @@
         </div>
       </details>
 
-      <details class="panel full-width collapsible-zone">
+      <details class="panel full-width collapsible-zone" open>
         <summary class="zone-summary">📖 Codex botanique global</summary>
         <div class="zone-content">
-          <p class="muted">Soyez le premier à découvrir une espèce sur le serveur !</p>
+          <p class="muted">Suivez votre collection, filtrez les espèces et repérez les découvertes encore manquantes.</p>
+
+          <div id="codexSummary" class="codex-summary" aria-live="polite"></div>
+
+          <div class="codex-toolbar" aria-label="Filtres du codex botanique">
+            <label>
+              Tier
+              <select id="codexTierFilter">
+                <option value="all">Tous</option>
+              </select>
+            </label>
+            <label>
+              Rareté
+              <select id="codexRarityFilter">
+                <option value="all">Toutes</option>
+              </select>
+            </label>
+            <label>
+              État
+              <select id="codexStateFilter">
+                <option value="all">Tous</option>
+                <option value="unlocked">Débloquées</option>
+                <option value="server-known">Connues serveur</option>
+                <option value="unknown">Inconnues</option>
+              </select>
+            </label>
+            <label class="codex-search-label">
+              Recherche
+              <input id="codexSearch" type="search" placeholder="Nom, description..." autocomplete="off" />
+            </label>
+            <button id="codexResetFilters" class="codex-reset-btn" type="button">Réinitialiser</button>
+          </div>
+
           <div id="codexGrid" class="codex-grid"></div>
         </div>
       </details>
