@@ -163,9 +163,49 @@ async function refreshGarden() {
   renderGarden(currentGarden, currentPlayerData.coins, onBuyGardenEffect);
 }
 
+function showToast(msg, type = 'error') {
+  let tc = document.getElementById('toast-container');
+  if (!tc) { tc = document.createElement('div'); tc.id = 'toast-container'; document.body.appendChild(tc); }
+  const t = document.createElement('div');
+  t.className = `toast toast-${type} toast-visible`;
+  t.textContent = msg;
+  tc.appendChild(t);
+  setTimeout(() => { t.classList.remove('toast-visible'); t.addEventListener('transitionend', () => t.remove(), { once: true }); }, 3000);
+}
+
+function applyLevelGating(level) {
+  const gardenSection  = document.getElementById('garden-section');
+  const testersSection = document.getElementById('testers-section');
+  if (gardenSection)  gardenSection.style.display  = level >= 3 ? '' : 'none';
+  if (testersSection) testersSection.style.display = level >= 3 ? '' : 'none';
+}
+
+function updateNextActionHint() {
+  const hintEl = document.getElementById('next-action-hint');
+  if (!hintEl) return;
+
+  const activePotCards = document.querySelectorAll('.multi-pot-card.pot-active');
+  const readyPotCards  = document.querySelectorAll('.pot-harvest-btn');
+  const hasSeeds       = document.querySelectorAll('.inv-card').length > 0;
+  const emptyPotCards  = document.querySelectorAll('.multi-pot-card.pot-empty');
+
+  if (readyPotCards.length > 0) {
+    hintEl.textContent = '🌺 Un pot est prêt à récolter !';
+    hintEl.style.display = '';
+  } else if (activePotCards.length === 0 && hasSeeds && emptyPotCards.length > 0) {
+    hintEl.textContent = '🌱 Lance ta première mutation : sélectionne deux graines dans l\'inventaire puis clique "Lancer la mutation".';
+    hintEl.style.display = '';
+  } else if (activePotCards.length === 0 && !hasSeeds) {
+    hintEl.textContent = '📦 Récupère ton colis mystère pour obtenir ta première graine !';
+    hintEl.style.display = '';
+  } else {
+    hintEl.style.display = 'none';
+  }
+}
+
 async function onBuyGardenEffect(effectId) {
   const result = await buyGardenEffect(getUserId(), effectId, currentPlayerData.coins, currentGarden);
-  if (result.error) { alert(result.error); return; }
+  if (result.error) { showToast(result.error); return; }
   currentGarden           = result.newGarden;
   currentPlayerData.coins = result.newCoins;
   updatePotsGarden(currentGarden);
@@ -193,6 +233,7 @@ async function onHarvest(harvestResult, xpResult) {
     pot_slots: xpResult.newPotSlots ?? currentPlayerData.pot_slots,
   };
   renderPlayerStats(currentPlayerData);
+  applyLevelGating(currentPlayerData.level ?? 1);
   updatePotsPlayerData(currentPlayerData);
 
   const xpGained = computeHarvestXp(
@@ -221,6 +262,7 @@ async function onHarvest(harvestResult, xpResult) {
 
   await Promise.all([loadSpecies(), refreshInventory(), refreshTesters()]);
   renderGarden(currentGarden, currentPlayerData.coins, onBuyGardenEffect);
+  updateNextActionHint();
 }
 
 if (notifBtn) {
@@ -246,6 +288,7 @@ async function init() {
 
     currentPlayerData = await loadPlayerData(getUserId());
     renderPlayerStats(currentPlayerData);
+    applyLevelGating(currentPlayerData.level ?? 1);
     currentPlayerData.user_id = getUserId();
 
     await loadSpecies();
@@ -261,7 +304,12 @@ async function init() {
       await refreshInventory();
     });
 
-    initMysterySeed(refreshInventory);
+    initMysterySeed(async () => {
+      await refreshInventory();
+      updateNextActionHint();
+    });
+
+    updateNextActionHint();
   });
 }
 
