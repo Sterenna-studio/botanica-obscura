@@ -2,6 +2,7 @@
 .env
 .env.*
 config.js
+.claude/
 
 # Dependencies / build caches
 node_modules/
