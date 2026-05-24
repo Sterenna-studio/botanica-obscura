@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Livraisons — Botanica Obscura</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ── Layout ── */
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body, sans-serif); min-height: 100dvh; }
+    .delivery-page { max-width: 780px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+    h1 { font-size: 1.6rem; margin-bottom: 0.25rem; }
+    .subtitle { color: var(--text-muted, #aaa); margin-bottom: 2rem; font-size: 0.9rem; }
+
+    /* ── Grille commandes ── */
+    .orders-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+
+    .order-card {
+      background: var(--surface, #1e1e2e);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 1.1rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+      position: relative;
+      transition: box-shadow 0.2s;
+    }
+    .order-card:hover { box-shadow: 0 0 0 2px var(--primary, #4fa69c); }
+    .order-card.expired { opacity: 0.4; pointer-events: none; }
+    .order-card.fulfilled { opacity: 0.5; pointer-events: none; border-color: #4caf50; }
+
+    .order-npc { font-size: 1.35rem; }
+    .order-npc-name { font-weight: 600; font-size: 0.9rem; }
+    .order-species { font-size: 0.85rem; color: var(--text-muted, #aaa); }
+    .order-species strong { color: var(--text, #fff); }
+
+    .order-reward { font-size: 0.95rem; font-weight: 700; color: #f0c040; }
+    .order-xp     { font-size: 0.78rem; color: #80cbc4; }
+
+    .order-timer {
+      font-size: 0.75rem;
+      color: var(--text-muted, #aaa);
+      font-variant-numeric: tabular-nums;
+    }
+    .order-timer.urgent { color: #ef5350; font-weight: 700; }
+
+    .btn-deliver {
+      margin-top: auto;
+      padding: 0.55rem 0;
+      background: var(--primary, #4fa69c);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-deliver:hover  { background: var(--primary-hover, #3d8a80); }
+    .btn-deliver:active { background: var(--primary-active, #2d6e65); }
+    .btn-deliver:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Rarity colors (réutilisés) ── */
+    .rarity-common    { color: #9e9e9e; }
+    .rarity-rare      { color: #42a5f5; }
+    .rarity-epic      { color: #ab47bc; }
+    .rarity-legendary { color: #ffa726; }
+    .rarity-mythic    { color: #ef5350; }
+
+    /* ── Toast ── */
+    #toast-delivery {
+      position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: #263238; color: #fff; padding: 0.6rem 1.2rem;
+      border-radius: 8px; font-size: 0.88rem; opacity: 0;
+      transition: opacity 0.25s, transform 0.25s;
+      z-index: 9999; white-space: nowrap;
+    }
+    #toast-delivery.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ── Refresh ── */
+    .refresh-bar { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem; }
+    .btn-refresh {
+      padding: 0.4rem 0.9rem; border-radius: 8px; font-size: 0.82rem;
+      background: transparent; border: 1px solid rgba(255,255,255,0.2);
+      color: var(--text, #fff); cursor: pointer;
+    }
+    .btn-refresh:hover { border-color: var(--primary, #4fa69c); color: var(--primary, #4fa69c); }
+    .next-refresh { font-size: 0.78rem; color: var(--text-muted, #aaa); font-variant-numeric: tabular-nums; }
+
+    /* ── Empty state ── */
+    .empty-delivery {
+      text-align: center; padding: 3rem 1rem; color: var(--text-muted, #aaa);
+    }
+    .empty-delivery .icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+    .loading-spinner { text-align:center; padding: 2rem; color: var(--text-muted,#aaa); }
+  </style>
+</head>
+<body>
+
+<!-- ══ Topbar réutilisée ══ -->
+<div id="topbar-mount"></div>
+
+<main class="delivery-page">
+  <h1>🚚 Livraisons</h1>
+  <p class="subtitle">Des collectionneurs attendent vos plantes. Livrez avant l'expiration pour gagner un bonus !</p>
+
+  <div class="refresh-bar">
+    <button class="btn-refresh" id="btnRefresh">🔄 Nouvelles commandes</button>
+    <span class="next-refresh" id="nextRefreshLabel"></span>
+  </div>
+
+  <div id="ordersContainer">
+    <div class="loading-spinner">Chargement des commandes…</div>
+  </div>
+</main>
+
+<div id="toast-delivery"></div>
+
+<script type="module">
+  import { generateOrders, fulfillOrder } from './lib/delivery.js';
+  import { supabase } from './lib/supabaseClient.js';
+
+  // ── Auth ──
+  let userId = null;
+  supabase.auth.getUser().then(({ data }) => {
+    userId = data?.user?.id ?? 'anonymous';
+    init();
+  });
+
+  // ── State ──
+  let orders       = [];
+  let timers       = {};     // orderId → setInterval
+  const REFRESH_MS = 15 * 60 * 1000; // 15 min auto-refresh
+  let nextRefreshAt = Date.now() + REFRESH_MS;
+
+  // ── Init ──
+  async function init() {
+    await refreshOrders();
+    startCountdownLoop();
+    setInterval(async () => {
+      nextRefreshAt = Date.now() + REFRESH_MS;
+      await refreshOrders();
+    }, REFRESH_MS);
+  }
+
+  async function refreshOrders() {
+    document.getElementById('ordersContainer').innerHTML =
+      '<div class="loading-spinner">Génération des commandes…</div>';
+    orders = await generateOrders(userId);
+    renderOrders();
+  }
+
+  // ── Render ──
+  function renderOrders() {
+    const container = document.getElementById('ordersContainer');
+    if (!orders.length) {
+      container.innerHTML = `
+        <div class="empty-delivery">
+          <div class="icon">🌱</div>
+          <p>Aucune graine en inventaire pour remplir une commande.</p>
+          <p>Cultivez d'abord des plantes !</p>
+        </div>`;
+      return;
+    }
+    container.innerHTML = '<div class="orders-grid" id="ordersGrid"></div>';
+    const grid = document.getElementById('ordersGrid');
+    orders.forEach(order => grid.appendChild(buildCard(order)));
+  }
+
+  function buildCard(order) {
+    const card = document.createElement('div');
+    card.className = 'order-card';
+    card.id = `card-${order.id}`;
+    card.innerHTML = `
+      <div class="order-npc">${order.npcEmoji}</div>
+      <div class="order-npc-name">${order.npcName}</div>
+      <div class="order-species">veut : <strong class="rarity-${order.rarity}">${order.speciesName}</strong></div>
+      <div class="order-reward">🪙 +${order.reward}</div>
+      <div class="order-xp">+XP livraison inclus</div>
+      <div class="order-timer" id="timer-${order.id}"></div>
+      <button class="btn-deliver" id="btn-${order.id}">📦 Livrer</button>
+    `;
+    card.querySelector(`#btn-${order.id}`).addEventListener('click', () => deliver(order));
+    return card;
+  }
+
+  // ── Timer loop ──
+  function startCountdownLoop() {
+    setInterval(() => {
+      const now = Date.now();
+      // Timers commandes
+      orders.forEach(order => {
+        const el = document.getElementById(`timer-${order.id}`);
+        if (!el) return;
+        const remaining = order.expiresAt - now;
+        if (remaining <= 0) {
+          el.textContent = 'Expirée';
+          document.getElementById(`card-${order.id}`)?.classList.add('expired');
+          document.getElementById(`btn-${order.id}`)?.setAttribute('disabled', '');
+        } else {
+          const m = Math.floor(remaining / 60000);
+          const s = Math.floor((remaining % 60000) / 1000);
+          el.textContent = `⏱ ${m}m ${String(s).padStart(2,'0')}s`;
+          if (remaining < 60000) el.classList.add('urgent');
+        }
+      });
+      // Label prochain refresh
+      const rr = nextRefreshAt - now;
+      const rm = Math.floor(rr / 60000);
+      const rs = Math.floor((rr % 60000) / 1000);
+      const label = document.getElementById('nextRefreshLabel');
+      if (label) label.textContent = rr > 0
+        ? `Prochaines commandes dans ${rm}m ${String(rs).padStart(2,'0')}s`
+        : 'Actualisation…';
+    }, 1000);
+  }
+
+  // ── Livraison ──
+  async function deliver(order) {
+    const btn  = document.getElementById(`btn-${order.id}`);
+    const card = document.getElementById(`card-${order.id}`);
+    if (!btn || !card) return;
+    btn.disabled = true;
+    btn.textContent = '⏳ Envoi…';
+
+    const result = await fulfillOrder(userId, order);
+
+    if (result.error) {
+      btn.disabled = false;
+      btn.textContent = '📦 Livrer';
+      toast(`❌ ${result.error}`, 'error');
+      return;
+    }
+
+    card.classList.add('fulfilled');
+    btn.textContent = '✅ Livré !';
+
+    let msg = `🚚 Livré ! +${order.reward}🪙  +${result.xpGained}XP`;
+    if (result.leveledUp) msg += ` 🎉 Niveau ${result.newLevel} !`;
+    toast(msg);
+
+    // Retire la commande de la liste
+    orders = orders.filter(o => o.id !== order.id);
+  }
+
+  // ── Toast ──
+  function toast(msg) {
+    const el = document.getElementById('toast-delivery');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 3000);
+  }
+
+  // ── Refresh manuel ──
+  document.getElementById('btnRefresh').addEventListener('click', async () => {
+    nextRefreshAt = Date.now() + REFRESH_MS;
+    await refreshOrders();
+  });
+</script>
+</body>
+</html>
