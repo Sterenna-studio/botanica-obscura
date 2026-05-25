@@ -1,7 +1,7 @@
 import { supabase, restoreStarSession } from './lib/supabaseClient.js';
 import { createPlantCharacterSvg } from './lib/plantSvg.js';
 import { getFallbackSpeciesTree } from './lib/speciesTree.js';
-import { renderMutationTree } from './lib/mutationTree.js';
+import { renderMutationTree, setTreeInventory } from './lib/mutationTree.js';
 import { loadInventory, renderInventory } from './lib/inventory.js';
 import { ensureTesters, renderTesters } from './lib/testers.js';
 import { restorePotNotification } from './lib/notifications.js';
@@ -23,6 +23,7 @@ import { initOnboarding } from './lib/onboarding.js';
 import { adjustLocalSeedQuantity, loadLocal, patchLocal } from './lib/localSave.js';
 import { showIntroIfNeeded } from './lib/intro.js';
 import { showDiscoveryNotice } from './lib/discoveryNotice.js';
+import { renderSpeciesPanel } from './lib/speciesPanel.js';
 
 export { supabase };
 export function getUserId() { return getBotanicaUserId(); }
@@ -43,6 +44,7 @@ let lastHarvestedSp       = null;
 let currentGarden         = {};
 let currentPlayerData     = { coins: 0, level: 1, xp: 0, pot_slots: 1 };
 let codexControlsReady    = false;
+let currentInventorySeeds = [];
 
 const codexFilters = { tier: 'all', rarity: 'all', state: 'all', search: '' };
 const RARITY_LABELS = { common: 'Commune', rare: 'Rare', epic: 'Épique', legendary: 'Légendaire', mythic: 'Mythique' };
@@ -55,6 +57,27 @@ function escapeHtml(value) {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#039;');
+}
+
+function getInventoryQties() {
+  return new Map(
+    currentInventorySeeds.map(s => [Number(s.species_id ?? s.species?.id), Number(s.quantity ?? 0)])
+  );
+}
+
+function openSpeciesPanel(species) {
+  renderSpeciesPanel(
+    species,
+    speciesList,
+    getInventoryQties(),
+    (speciesId, parentAId, parentBId) => {
+      // Essaie de charger parentA dans un pot, puis parentB
+      const okA = selectSpeciesForNextPot(parentAId);
+      const okB = selectSpeciesForNextPot(parentBId);
+      if (!okA || !okB) showToast('Impossible de placer les graines — vérifie les pots libres.', 'error');
+    },
+    playerCodexIds
+  );
 }
 
 function showHarvestReveal(species, qualityTier, xpGained, isFirst, onClose) {
@@ -121,7 +144,8 @@ async function loadSpecies() {
     : getFallbackSpeciesTree().map(s => ({ ...s, was_first_server: playerFirstServerIds.has(s.id) }));
 
   renderCodex();
-  renderMutationTree(speciesList, playerCodexIds, null);
+  setTreeInventory(getInventoryQties());
+  renderMutationTree(speciesList, playerCodexIds, openSpeciesPanel);
   updatePotsSpecies(speciesList);
 }
 
@@ -187,7 +211,7 @@ function renderCodexCard(species) {
   const rarityLabel = RARITY_LABELS[rarity] ?? rarity;
 
   if (state === 'unlocked') return `
-    <article class="codex-card rarity-${escapeHtml(rarity)} state-unlocked" data-id="${escapeHtml(species.id)}" data-state="unlocked">
+    <article class="codex-card rarity-${escapeHtml(rarity)} state-unlocked codex-card-clickable" data-id="${escapeHtml(species.id)}" data-state="unlocked" title="Voir le détail">
       <div class="codex-card-topline"><span class="codex-tier-pill">Tier ${escapeHtml(tier)}</span><span class="rarity-badge ${escapeHtml(rarity)}">${escapeHtml(rarityLabel)}</span></div>
       <div class="codex-sprite">${createPlantCharacterSvg(species)}</div>
       <h3>${escapeHtml(species.name)}</h3><p>${escapeHtml(species.description || '')}</p>
@@ -195,7 +219,7 @@ function renderCodexCard(species) {
     </article>`;
 
   if (state === 'server-known') return `
-    <article class="codex-card state-server-known" data-id="${escapeHtml(species.id)}" data-state="server-known" title="Découverte par ${escapeHtml(species.discoverer_name ?? '???')}">
+    <article class="codex-card state-server-known codex-card-clickable" data-id="${escapeHtml(species.id)}" data-state="server-known" title="Voir la recette">
       <div class="codex-card-topline"><span class="codex-tier-pill">Tier ?</span><span class="rarity-badge ${escapeHtml(rarity)}">${escapeHtml(rarityLabel)}</span></div>
       <div class="codex-sprite codex-silhouette">${createPlantCharacterSvg(species)}</div>
       <h3 class="codex-unknown-name">Espèce observée</h3>
@@ -219,6 +243,15 @@ function renderCodex() {
     return;
   }
   codexGrid.innerHTML = visibleSpecies.map(renderCodexCard).join('');
+
+  // Bind clics codex → panneau détail
+  codexGrid.querySelectorAll('.codex-card-clickable').forEach(card => {
+    card.addEventListener('click', () => {
+      const id = Number(card.dataset.id);
+      const species = speciesList.find(s => Number(s.id) === id);
+      if (species) openSpeciesPanel(species);
+    });
+  });
 }
 
 function setupCodexControls() {
@@ -240,7 +273,9 @@ function setupCodexControls() {
 
 async function refreshInventory() {
   const seeds = await loadInventory(getUserId());
+  currentInventorySeeds = seeds;
   updatePotsInventory(seeds);
+  setTreeInventory(getInventoryQties());
   renderInventory(seeds, (speciesId) => {
     const selected = selectSpeciesForNextPot(speciesId);
     if (!selected) console.warn('[app] Impossible de sélectionner cette graine dans un pot libre.');

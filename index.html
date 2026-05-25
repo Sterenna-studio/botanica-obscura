@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="styles/intro.css" />
     <link rel="stylesheet" href="styles/codex.css" />
     <link rel="stylesheet" href="styles/discovery.css" />
+    <link rel="stylesheet" href="styles/speciesPanel.css" />
   </head>
   <body>
     <header class="topbar">
@@ -73,8 +74,6 @@
 
     <main class="layout">
 
-      <!-- ══ ZONE PRINCIPALE ════════════════════════════════════════════════════════════════════════════════════════ -->
-
       <section class="panel full-width" id="pots-section">
         <h2>🧪 Pots de mutation</h2>
         <p class="muted">Combinez deux graines pour faire pousser une mutation. Débloquez de nouveaux slots en montant de niveau (Lv.4, Lv.5, Lv.8).</p>
@@ -90,8 +89,6 @@
           <div id="mystery-seed-msg"></div>
         </div>
       </section>
-
-      <!-- ══ ZONE SECONDAIRE (dépliable) ═══════════════════════════════════════════════════════════════════════ -->
 
       <details class="panel full-width collapsible-zone" open>
         <summary class="zone-summary">🎒 Inventaire des graines</summary>
@@ -118,12 +115,10 @@
         </div>
       </details>
 
-      <!-- ══ ZONE COLLECTION (dépliable) ═══════════════════════════════════════════════════════════════════════ -->
-
       <details class="panel full-width collapsible-zone">
         <summary class="zone-summary">🗺️ Arbre des mutations</summary>
         <div class="zone-content">
-          <p class="muted">Clique sur une espèce pour voir sa recette et l'envoyer dans un pot.</p>
+          <p class="muted">Clique sur un nœud pour voir la recette et envoyer directement dans un pot.</p>
           <div id="mutationTree" class="mutation-tree-wrap"></div>
         </div>
       </details>
@@ -131,7 +126,7 @@
       <details class="panel full-width collapsible-zone" open>
         <summary class="zone-summary">📖 Codex botanique global</summary>
         <div class="zone-content">
-          <p class="muted">Suivez votre collection, filtrez les espèces et repérez les découvertes encore manquantes.</p>
+          <p class="muted">Cliquez une espèce pour voir sa recette, ses prix NPC et la lancer en craft.</p>
 
           <div id="codexSummary" class="codex-summary" aria-live="polite"></div>
 
