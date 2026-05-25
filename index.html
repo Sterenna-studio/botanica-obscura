@@ -23,7 +23,6 @@
         <a href="/star/" class="back-to-star">← Star</a>
         <div class="topbar-title">
           <h1>🌿 Botanica Obscura</h1>
-          <p class="subtitle">Idle gacha botanique • mutations • codex partagé</p>
         </div>
       </div>
       <div class="player-stats">
@@ -45,8 +44,6 @@
         <a href="leaderboard.html" class="nav-link">🏆 Classement</a>
         <a href="profil.html" class="nav-link">🌱 Profil</a>
         <a href="delivery.html" class="nav-link">🚚 Livraisons</a>
-        <a href="debug.html" class="nav-link debug-link">🧪 Debug</a>
-        <button id="notifBtn" class="notif-btn">🔔 Activer notifs</button>
       </div>
     </header>
 
@@ -76,21 +73,12 @@
 
     <main class="layout">
 
-      <!-- ══ ZONE PRINCIPALE ═══════════════════════════════════════════════════════════════════ -->
+      <!-- ══ ZONE PRINCIPALE ════════════════════════════════════════════════════════════════════════════════════════ -->
 
       <section class="panel full-width" id="pots-section">
         <h2>🧪 Pots de mutation</h2>
         <p class="muted">Combinez deux graines pour faire pousser une mutation. Débloquez de nouveaux slots en montant de niveau (Lv.4, Lv.5, Lv.8).</p>
-        <div id="next-action-hint" class="next-action-hint" style="display:none"></div>
         <div id="pots-grid" class="pots-grid-wrap"></div>
-      </section>
-
-      <section class="panel">
-        <h2>🔍 Prévisualisation</h2>
-        <div class="plant-preview">
-          <div id="plantCharacter"></div>
-          <div id="plantDescription">Sélectionnez une espèce.</div>
-        </div>
       </section>
 
       <section class="panel full-width">
@@ -103,7 +91,7 @@
         </div>
       </section>
 
-      <!-- ══ ZONE SECONDAIRE (dépliable) ════════════════════════════════════════════════════ -->
+      <!-- ══ ZONE SECONDAIRE (dépliable) ═══════════════════════════════════════════════════════════════════════ -->
 
       <details class="panel full-width collapsible-zone" open>
         <summary class="zone-summary">🎒 Inventaire des graines</summary>
@@ -130,12 +118,12 @@
         </div>
       </details>
 
-      <!-- ══ ZONE COLLECTION (dépliable) ════════════════════════════════════════════════════ -->
+      <!-- ══ ZONE COLLECTION (dépliable) ═══════════════════════════════════════════════════════════════════════ -->
 
       <details class="panel full-width collapsible-zone">
         <summary class="zone-summary">🗺️ Arbre des mutations</summary>
         <div class="zone-content">
-          <p class="muted">Clique sur une espèce pour la prévisualiser et suivre ses branches.</p>
+          <p class="muted">Clique sur une espèce pour voir sa recette et l'envoyer dans un pot.</p>
           <div id="mutationTree" class="mutation-tree-wrap"></div>
         </div>
       </details>

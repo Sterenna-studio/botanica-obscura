@@ -34,9 +34,6 @@ const codexRarityFilter = document.getElementById('codexRarityFilter');
 const codexStateFilter  = document.getElementById('codexStateFilter');
 const codexSearch       = document.getElementById('codexSearch');
 const codexResetFilters = document.getElementById('codexResetFilters');
-const plantCharacter    = document.getElementById('plantCharacter');
-const plantDesc         = document.getElementById('plantDescription');
-const notifBtn          = document.getElementById('notifBtn');
 
 let speciesList           = [];
 let playerCodexIds        = new Set();
@@ -124,15 +121,8 @@ async function loadSpecies() {
     : getFallbackSpeciesTree().map(s => ({ ...s, was_first_server: playerFirstServerIds.has(s.id) }));
 
   renderCodex();
-  renderMutationTree(speciesList, playerCodexIds, renderPreview);
-  renderPreview(speciesList.find(s => playerCodexIds.has(s.id)) ?? speciesList[0]);
+  renderMutationTree(speciesList, playerCodexIds, null);
   updatePotsSpecies(speciesList);
-}
-
-function renderPreview(species) {
-  if (!species) return;
-  plantCharacter.innerHTML = createPlantCharacterSvg(species);
-  plantDesc.textContent = species.description || 'Aucune description.';
 }
 
 function getCodexState(species) {
@@ -229,9 +219,6 @@ function renderCodex() {
     return;
   }
   codexGrid.innerHTML = visibleSpecies.map(renderCodexCard).join('');
-  document.querySelectorAll('.codex-card.state-unlocked').forEach(card => {
-    card.addEventListener('click', () => renderPreview(speciesList.find(s => String(s.id) === card.dataset.id)));
-  });
 }
 
 function setupCodexControls() {
@@ -293,24 +280,6 @@ function applyLevelGating(level) {
   if (testersSection) testersSection.style.display = level >= 3 ? '' : 'none';
 }
 
-function updateNextActionHint() {
-  const hintEl = document.getElementById('next-action-hint');
-  if (!hintEl) return;
-  const activePotCards = document.querySelectorAll('.multi-pot-card.pot-active');
-  const readyPotCards = document.querySelectorAll('.pot-harvest-btn');
-  const hasSeeds = document.querySelectorAll('.inv-card').length > 0;
-  const emptyPotCards = document.querySelectorAll('.multi-pot-card.pot-empty');
-  if (readyPotCards.length > 0) {
-    hintEl.textContent = '🌺 Un pot est prêt à récolter !'; hintEl.style.display = '';
-  } else if (activePotCards.length === 0 && hasSeeds && emptyPotCards.length > 0) {
-    hintEl.textContent = '🌱 Lance ta première mutation : sélectionne deux graines dans l\'inventaire puis clique "Lancer la mutation".'; hintEl.style.display = '';
-  } else if (activePotCards.length === 0 && !hasSeeds) {
-    hintEl.textContent = '📦 Récupère ton colis mystère pour obtenir ta première graine !'; hintEl.style.display = '';
-  } else {
-    hintEl.style.display = 'none';
-  }
-}
-
 async function onBuyGardenEffect(effectId) {
   const result = await buyGardenEffect(getUserId(), effectId, currentPlayerData.coins, currentGarden);
   if (result.error) { showToast(result.error); return; }
@@ -351,16 +320,6 @@ async function onHarvest(harvestResult, xpResult) {
 
   await Promise.all([loadSpecies(), refreshInventory(), refreshTesters()]);
   renderGarden(currentGarden, currentPlayerData.coins, onBuyGardenEffect);
-  updateNextActionHint();
-}
-
-if (notifBtn) {
-  notifBtn.addEventListener('click', async () => {
-    const { requestNotifPermission } = await import('./lib/notifications.js');
-    const granted = await requestNotifPermission();
-    notifBtn.textContent = granted ? '🔔 Notifs activées' : '🔕 Notifs refusées';
-    notifBtn.disabled = granted;
-  });
 }
 
 async function init() {
@@ -381,8 +340,7 @@ async function init() {
     await Promise.all([refreshInventory(), refreshTesters(), refreshGarden()]);
     await initOnboarding(getUserId(), async () => { await refreshInventory(); });
     await initPots(speciesList, currentPlayerData, onHarvest, currentGarden, refreshInventory);
-    initMysterySeed(async () => { await refreshInventory(); updateNextActionHint(); }, () => currentPlayerData.level ?? 1);
-    updateNextActionHint();
+    initMysterySeed(async () => { await refreshInventory(); }, () => currentPlayerData.level ?? 1);
   });
 }
 
