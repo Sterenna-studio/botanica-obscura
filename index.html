@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="styles/codex.css" />
     <link rel="stylesheet" href="styles/discovery.css" />
     <link rel="stylesheet" href="styles/speciesPanel.css" />
+    <link rel="stylesheet" href="styles/deliveryGame.css" />
   </head>
   <body>
     <header class="topbar">
@@ -67,6 +68,7 @@
         <div id="harvest-reveal-svg" class="harvest-reveal-svg"></div>
         <div id="harvest-reveal-name" class="harvest-reveal-name"></div>
         <div id="harvest-reveal-rarity" class="harvest-reveal-rarity"></div>
+        <div id="harvest-reveal-qty" class="harvest-reveal-qty"></div>
         <div id="harvest-reveal-xp" class="harvest-reveal-xp"></div>
         <button id="harvest-reveal-close" class="harvest-reveal-close-btn">Continuer 🌿</button>
       </div>
@@ -94,6 +96,7 @@
         <summary class="zone-summary">🎒 Inventaire des graines</summary>
         <div class="zone-content">
           <p class="muted">Vendez au NPC pour gagner des pièces. Cliquez "🌱 Placer" pour charger une graine dans un pot.</p>
+          <button id="deliver-btn" disabled>🚗 Livrer (0 graines)</button>
           <div id="inventoryEmpty" class="muted" style="display:none">Aucune graine pour l'instant.</div>
           <div id="inventoryGrid" class="inventory-grid"></div>
         </div>
@@ -102,7 +105,7 @@
       <details class="panel full-width collapsible-zone" id="garden-section" style="display:none">
         <summary class="zone-summary">🌡️ Jardin &amp; Améliorations</summary>
         <div class="zone-content">
-          <p class="muted">Améliorez votre jardin pour augmenter la qualité de vos récoltes.</p>
+          <p class="muted">Améliorez votre jardin pour augmenter la qualité et la quantité de vos récoltes.</p>
           <div id="gardenContainer" class="garden-grid"></div>
         </div>
       </details>
@@ -127,24 +130,11 @@
         <summary class="zone-summary">📖 Codex botanique global</summary>
         <div class="zone-content">
           <p class="muted">Cliquez une espèce pour voir sa recette, ses prix NPC et la lancer en craft.</p>
-
           <div id="codexSummary" class="codex-summary" aria-live="polite"></div>
-
           <div class="codex-toolbar" aria-label="Filtres du codex botanique">
-            <label>
-              Tier
-              <select id="codexTierFilter">
-                <option value="all">Tous</option>
-              </select>
-            </label>
-            <label>
-              Rareté
-              <select id="codexRarityFilter">
-                <option value="all">Toutes</option>
-              </select>
-            </label>
-            <label>
-              État
+            <label>Tier<select id="codexTierFilter"><option value="all">Tous</option></select></label>
+            <label>Rareté<select id="codexRarityFilter"><option value="all">Toutes</option></select></label>
+            <label>État
               <select id="codexStateFilter">
                 <option value="all">Tous</option>
                 <option value="unlocked">Débloquées</option>
@@ -152,13 +142,11 @@
                 <option value="unknown">Inconnues</option>
               </select>
             </label>
-            <label class="codex-search-label">
-              Recherche
+            <label class="codex-search-label">Recherche
               <input id="codexSearch" type="search" placeholder="Nom, description..." autocomplete="off" />
             </label>
             <button id="codexResetFilters" class="codex-reset-btn" type="button">Réinitialiser</button>
           </div>
-
           <div id="codexGrid" class="codex-grid"></div>
         </div>
       </details>

@@ -1,0 +1,153 @@
+/* ── Mini-jeu de livraison ──────────────────────────────────────── */
+#delivery-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(5, 15, 5, 0.88);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: dgFadeIn 0.2s ease;
+}
+
+@keyframes dgFadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.dg-panel {
+  background: #0f1f0f;
+  border: 2px solid #2d5a27;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 680px;
+  width: 96vw;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.7);
+}
+
+.dg-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dg-title {
+  font-family: monospace;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #c8e6c9;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.dg-close {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid #555;
+  color: #aaa;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.dg-close:hover { background: rgba(255,80,80,0.2); color: #ff8080; }
+
+.dg-hud {
+  display: flex;
+  gap: 16px;
+  font-size: 0.85rem;
+  color: #a5d6a7;
+  font-family: monospace;
+  flex-wrap: wrap;
+}
+
+#delivery-canvas {
+  width: 100%;
+  max-width: 640px;
+  border-radius: 10px;
+  border: 1px solid #2d5a27;
+  image-rendering: pixelated;
+  background: #1a1a1a;
+  display: block;
+  margin: 0 auto;
+  touch-action: none;
+}
+
+.dg-controls {
+  text-align: center;
+  font-size: 0.76rem;
+  color: #558b2f;
+  font-family: monospace;
+}
+
+/* ── Résultat ─────────────────────────── */
+.dg-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 32px 20px;
+  min-height: 240px;
+  text-align: center;
+}
+
+.dg-result-icon { font-size: 3rem; }
+
+.dg-result-title {
+  font-family: monospace;
+  font-size: 1.2rem;
+  font-weight: bold;
+  letter-spacing: 0.08em;
+}
+
+.dg-win  .dg-result-title { color: #81c784; }
+.dg-lose .dg-result-title { color: #ef5350; }
+
+.dg-result-body {
+  font-size: 0.95rem;
+  color: #c8e6c9;
+  line-height: 1.7;
+}
+
+.dg-result-body strong {
+  color: #ffd54f;
+  font-size: 1.3rem;
+}
+
+.dg-close-result {
+  margin-top: 8px;
+  padding: 10px 28px;
+  background: linear-gradient(135deg, #2e7d32, #1b5e20);
+  color: #c8e6c9;
+  border: 1px solid #4caf50;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  font-family: monospace;
+  transition: background 0.15s;
+}
+.dg-close-result:hover { background: linear-gradient(135deg, #388e3c, #2e7d32); }
+
+/* Bouton livrer dans l'inventaire */
+#deliver-btn {
+  margin: 8px 0 0;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #1565c0, #0d47a1);
+  color: #e3f2fd;
+  border: 1px solid #42a5f5;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-family: monospace;
+  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+#deliver-btn:hover { background: linear-gradient(135deg, #1976d2, #1565c0); }
+#deliver-btn:disabled { opacity: 0.4; cursor: not-allowed; }
