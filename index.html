@@ -22,10 +22,8 @@
   <body>
     <header class="topbar">
       <div class="topbar-left">
-        <a href="/star/" class="back-to-star">← Star</a>
-        <div class="topbar-title">
-          <h1>🌿 Botanica Obscura</h1>
-        </div>
+        <a href="/star/" class="back-to-star">&larr; Star</a>
+        <div class="topbar-title"><h1>🌿 Botanica Obscura</h1></div>
       </div>
       <div class="player-stats">
         <span id="coins">🪙 0</span>
@@ -36,7 +34,7 @@
           </div>
           <span id="xp-text" class="xp-text">0 / 100 XP</span>
         </div>
-        <span id="pot-slots-badge">🪨 1 slot</span>
+        <span id="pot-slots-badge">🪴 1 slot</span>
         <div id="authZone" class="auth-zone">
           <div id="userBadge" class="user-badge" style="display:none">
             <span class="auth-avatar-placeholder">🌿</span>
@@ -45,7 +43,6 @@
         </div>
         <a href="leaderboard.html" class="nav-link">🏆 Classement</a>
         <a href="profil.html" class="nav-link">🌱 Profil</a>
-        <a href="delivery.html" class="nav-link">🚚 Livraisons</a>
       </div>
     </header>
 
@@ -69,6 +66,7 @@
         <div id="harvest-reveal-name" class="harvest-reveal-name"></div>
         <div id="harvest-reveal-rarity" class="harvest-reveal-rarity"></div>
         <div id="harvest-reveal-qty" class="harvest-reveal-qty"></div>
+        <div id="harvest-reveal-seeds" class="harvest-reveal-seeds" style="display:none"></div>
         <div id="harvest-reveal-xp" class="harvest-reveal-xp"></div>
         <button id="harvest-reveal-close" class="harvest-reveal-close-btn">Continuer 🌿</button>
       </div>
@@ -85,18 +83,29 @@
       <section class="panel full-width">
         <div id="mystery-seed-zone">
           <h3>📦 Colis mystère</h3>
-          <p class="muted">Une graine aléatoire Tier 1 toutes les 12h. À partir du niveau 2, le colis utilise un pool amélioré.</p>
+          <p class="muted">Une graine aléatoire Tier 1 toutes les 12h.</p>
           <button id="mystery-seed-btn">📦 Récupérer ma graine mystère</button>
           <div id="mystery-seed-countdown"></div>
           <div id="mystery-seed-msg"></div>
         </div>
       </section>
 
+      <!-- FLEURS (à vendre / livrer) -->
       <details class="panel full-width collapsible-zone" open>
-        <summary class="zone-summary">🎒 Inventaire des graines</summary>
+        <summary class="zone-summary">🌸 Fleurs récoltées</summary>
         <div class="zone-content">
-          <p class="muted">Vendez au NPC pour gagner des pièces. Cliquez "🌱 Placer" pour charger une graine dans un pot.</p>
-          <button id="deliver-btn" disabled>🚗 Livrer (0 graines)</button>
+          <p class="muted">Les fleurs sont le produit de vos mutations. Vendez-les au NPC ou livrez-les pour gagner plus de pièces.</p>
+          <button id="deliver-btn" disabled>🚗 Livrer (0 fleur)</button>
+          <div id="flowersEmpty" class="muted" style="display:none">Aucune fleur pour l'instant. Récoltez un pot !</div>
+          <div id="flowersGrid" class="inventory-grid"></div>
+        </div>
+      </details>
+
+      <!-- GRAINES (à planter) -->
+      <details class="panel full-width collapsible-zone" open>
+        <summary class="zone-summary">🌱 Graines (à planter)</summary>
+        <div class="zone-content">
+          <p class="muted">Les graines servent uniquement à remplir les pots de mutation. Elles viennent des espèces parentes lors de la récolte (70% de chance, 1-3 graines par parent).</p>
           <div id="inventoryEmpty" class="muted" style="display:none">Aucune graine pour l'instant.</div>
           <div id="inventoryGrid" class="inventory-grid"></div>
         </div>

@@ -12,6 +12,8 @@ import { QUALITY_TIERS } from './lib/quality.js';
 import { initMysterySeed } from './lib/mysterySeed.js';
 import { computeHarvestXp } from './lib/xp.js';
 import { computeHarvestQuantity } from './lib/harvestQuantity.js';
+import { performSeedDrop } from './lib/seedDrop.js';
+import { loadFlowers, addFlowers, renderFlowers, totalFlowerCount } from './lib/flowerInventory.js';
 import { launchDeliveryGame } from './lib/deliveryGame.js';
 import {
   initPots,
@@ -47,6 +49,7 @@ let currentGarden         = {};
 let currentPlayerData     = { coins: 0, level: 1, xp: 0, pot_slots: 1 };
 let codexControlsReady    = false;
 let currentInventorySeeds = [];
+let currentFlowers        = [];
 
 const codexFilters = { tier: 'all', rarity: 'all', state: 'all', search: '' };
 const RARITY_LABELS = { common: 'Commune', rare: 'Rare', epic: 'Épique', legendary: 'Légendaire', mythic: 'Mythique' };
@@ -80,7 +83,7 @@ function openSpeciesPanel(species) {
   );
 }
 
-function showHarvestReveal(species, qualityTier, xpGained, qty, isFirst, onClose) {
+function showHarvestReveal(species, qualityTier, xpGained, flowerQty, seedDrops, isFirst, onClose) {
   const overlay      = document.getElementById('harvest-reveal-overlay');
   if (!overlay) { onClose?.(); return; }
   const firstBanner  = document.getElementById('harvest-reveal-first');
@@ -91,6 +94,7 @@ function showHarvestReveal(species, qualityTier, xpGained, qty, isFirst, onClose
   const xpEl         = document.getElementById('harvest-reveal-xp');
   const closeBtn     = document.getElementById('harvest-reveal-close');
   const qtyEl        = document.getElementById('harvest-reveal-qty');
+  const seedDropEl   = document.getElementById('harvest-reveal-seeds');
 
   if (firstBanner)  firstBanner.style.display  = isFirst ? '' : 'none';
   if (qualityBadge) { qualityBadge.textContent = qualityTier.label; qualityBadge.style.color = qualityTier.color; }
@@ -98,7 +102,19 @@ function showHarvestReveal(species, qualityTier, xpGained, qty, isFirst, onClose
   if (nameEl)       nameEl.textContent = species.name ?? '???';
   if (rarityEl)     rarityEl.innerHTML = `<span class="rarity-badge ${species.rarity ?? ''}">${species.rarity ?? '—'}</span>`;
   if (xpEl)         xpEl.textContent = `+${xpGained} XP`;
-  if (qtyEl)        qtyEl.textContent = `x${qty} graine${qty > 1 ? 's' : ''} récoltée${qty > 1 ? 's' : ''}`;
+  if (qtyEl)        qtyEl.textContent = `🌸 x${flowerQty} fleur${flowerQty > 1 ? 's' : ''} récoltée${flowerQty > 1 ? 's' : ''}`;
+
+  // Affiche les graines tombées des parents
+  if (seedDropEl) {
+    if (seedDrops?.length) {
+      seedDropEl.innerHTML = seedDrops
+        .map(d => `🌱 +${d.qty} graine${d.qty > 1 ? 's' : ''} (espèce #${d.speciesId})`)
+        .join('<br>');
+      seedDropEl.style.display = '';
+    } else {
+      seedDropEl.style.display = 'none';
+    }
+  }
 
   overlay.style.display = 'flex';
   if (closeBtn) closeBtn.onclick = () => { overlay.style.display = 'none'; onClose?.(); };
@@ -164,7 +180,7 @@ function getFilteredSpecies() {
     if (codexFilters.tier   !== 'all' && String(s.tier)   !== codexFilters.tier)   return false;
     if (codexFilters.rarity !== 'all' && String(s.rarity) !== codexFilters.rarity) return false;
     if (codexFilters.state  !== 'all' && state             !== codexFilters.state)  return false;
-    if (search && !getCodexSearchText(s).includes(search)) return false;
+    if (codexFilters.search.trim() && !getCodexSearchText(s).includes(codexFilters.search.trim().toLowerCase())) return false;
     return true;
   });
 }
@@ -207,7 +223,6 @@ function renderCodexCard(species) {
   const rarity      = species.rarity ?? 'common';
   const tier        = species.tier   ?? '—';
   const rarityLabel = RARITY_LABELS[rarity] ?? rarity;
-
   if (state === 'unlocked') return `
     <article class="codex-card rarity-${escapeHtml(rarity)} state-unlocked codex-card-clickable" data-id="${escapeHtml(species.id)}" title="Voir le détail">
       <div class="codex-card-topline"><span class="codex-tier-pill">Tier ${escapeHtml(tier)}</span><span class="rarity-badge ${escapeHtml(rarity)}">${escapeHtml(rarityLabel)}</span></div>
@@ -215,7 +230,6 @@ function renderCodexCard(species) {
       <h3>${escapeHtml(species.name)}</h3><p>${escapeHtml(species.description || '')}</p>
       ${playerFirstServerIds.has(species.id) ? '<div class="first-discovery">🏅 1ère découverte serveur</div>' : ''}
     </article>`;
-
   if (state === 'server-known') return `
     <article class="codex-card state-server-known codex-card-clickable" data-id="${escapeHtml(species.id)}" title="Voir la recette">
       <div class="codex-card-topline"><span class="codex-tier-pill">Tier ?</span><span class="rarity-badge ${escapeHtml(rarity)}">${escapeHtml(rarityLabel)}</span></div>
@@ -223,7 +237,6 @@ function renderCodexCard(species) {
       <h3 class="codex-unknown-name">Espèce observée</h3>
       <div class="codex-server-badge">${species.discoverer_avatar ? `<img src="${escapeHtml(species.discoverer_avatar)}" class="codex-discoverer-avatar" alt="" />` : '🌐'}<span>Découverte par <strong>${escapeHtml(species.discoverer_name ?? '???')}</strong></span></div>
     </article>`;
-
   return `
     <article class="codex-card state-unknown" data-id="${escapeHtml(species.id)}">
       <div class="codex-card-topline"><span class="codex-tier-pill">Tier ?</span><span class="codex-state-pill">Inconnue</span></div>
@@ -253,12 +266,12 @@ function renderCodex() {
 function setupCodexControls() {
   if (codexControlsReady) return;
   codexControlsReady = true;
-  codexTierFilter?.addEventListener('change',  () => { codexFilters.tier    = codexTierFilter.value;   renderCodex(); });
-  codexRarityFilter?.addEventListener('change',() => { codexFilters.rarity  = codexRarityFilter.value; renderCodex(); });
-  codexStateFilter?.addEventListener('change', () => { codexFilters.state   = codexStateFilter.value;  renderCodex(); });
-  codexSearch?.addEventListener('input',       () => { codexFilters.search  = codexSearch.value;        renderCodex(); });
+  codexTierFilter?.addEventListener('change',  () => { codexFilters.tier   = codexTierFilter.value;   renderCodex(); });
+  codexRarityFilter?.addEventListener('change',() => { codexFilters.rarity = codexRarityFilter.value; renderCodex(); });
+  codexStateFilter?.addEventListener('change', () => { codexFilters.state  = codexStateFilter.value;  renderCodex(); });
+  codexSearch?.addEventListener('input',       () => { codexFilters.search = codexSearch.value;        renderCodex(); });
   codexResetFilters?.addEventListener('click', () => {
-    codexFilters.tier = 'all'; codexFilters.rarity = 'all'; codexFilters.state = 'all'; codexFilters.search = '';
+    Object.assign(codexFilters, { tier: 'all', rarity: 'all', state: 'all', search: '' });
     if (codexTierFilter)   codexTierFilter.value   = 'all';
     if (codexRarityFilter) codexRarityFilter.value = 'all';
     if (codexStateFilter)  codexStateFilter.value  = 'all';
@@ -270,9 +283,9 @@ function setupCodexControls() {
 function renderDeliverBtn() {
   const btn = document.getElementById('deliver-btn');
   if (!btn) return;
-  const total = totalSeedCount();
+  const total = totalFlowerCount(currentFlowers); // cargo = fleurs, pas graines
   btn.disabled = total === 0;
-  btn.innerHTML = `🚗 Livrer (${total} graine${total !== 1 ? 's' : ''})`;
+  btn.innerHTML = `🚗 Livrer (${total} fleur${total !== 1 ? 's' : ''})`;
 }
 
 async function refreshInventory() {
@@ -286,6 +299,18 @@ async function refreshInventory() {
       if (!selected) console.warn('[app] Impossible de sélectionner cette graine dans un pot libre.');
       return selected;
     },
+    (newCoins) => {
+      currentPlayerData.coins = newCoins;
+      renderPlayerStats(currentPlayerData);
+      renderGarden(currentGarden, newCoins, onBuyGardenEffect);
+    },
+    getUserId()
+  );
+}
+
+async function refreshFlowers() {
+  currentFlowers = await loadFlowers(getUserId());
+  renderFlowers(currentFlowers,
     (newCoins) => {
       currentPlayerData.coins = newCoins;
       renderPlayerStats(currentPlayerData);
@@ -339,16 +364,15 @@ async function onHarvest(harvestResult, xpResult) {
     ? { ...harvestResult.result_species, quality_tier_id: harvestResult.quality_tier_id ?? 1 }
     : null;
 
-  // ── Quantité réelle récoltée ──────────────────────────────────
-  const harvestQty = computeHarvestQuantity(
+  // ── 1. Fleurs récoltées (espèce mutée) ────────────────────────────────────
+  const flowerQty = computeHarvestQuantity(
     harvestResult.quality_tier_id ?? 1,
     currentGarden,
     lastHarvestedSp?.tier ?? 1
   );
 
   if (lastHarvestedSp?.id) {
-    // Ajuste l'inventaire local avec la quantité réelle (pas juste +1)
-    adjustLocalSeedQuantity(lastHarvestedSp.id, harvestQty);
+    await addFlowers(getUserId(), lastHarvestedSp.id, harvestResult.quality_tier_id ?? 1, flowerQty);
     playerCodexIds.add(lastHarvestedSp.id);
     if (harvestResult.first_server_discovery === true) playerFirstServerIds.add(lastHarvestedSp.id);
     window.__botanicaCodexIds = playerCodexIds;
@@ -356,6 +380,14 @@ async function onHarvest(harvestResult, xpResult) {
     patchLocal('firstServerCodexIds', [...playerFirstServerIds]);
   }
 
+  // ── 2. Graines parentes (drop 1-3 aléatoire) ──────────────────────────────
+  const { drops: seedDrops } = await performSeedDrop(
+    getUserId(),
+    harvestResult.species_a_id,
+    harvestResult.species_b_id
+  );
+
+  // ── 3. XP / level ─────────────────────────────────────────────────────────
   currentPlayerData = { ...currentPlayerData, xp: xpResult.newXp, level: xpResult.newLevel, coins: xpResult.newCoins, pot_slots: xpResult.newPotSlots ?? currentPlayerData.pot_slots };
   renderPlayerStats(currentPlayerData);
   applyLevelGating(currentPlayerData.level ?? 1);
@@ -368,11 +400,11 @@ async function onHarvest(harvestResult, xpResult) {
 
   showHarvestReveal(
     lastHarvestedSp ?? { name: '???', rarity: 'common' },
-    quality, xpGained, harvestQty, isFirst,
+    quality, xpGained, flowerQty, seedDrops, isFirst,
     () => { if (xpResult.leveledUp) showLevelUpOverlay(xpResult.newLevel, xpResult.reward); }
   );
 
-  await Promise.all([loadSpecies(), refreshInventory(), refreshTesters()]);
+  await Promise.all([loadSpecies(), refreshInventory(), refreshFlowers(), refreshTesters()]);
   renderGarden(currentGarden, currentPlayerData.coins, onBuyGardenEffect);
 }
 
@@ -391,26 +423,24 @@ async function init() {
     applyLevelGating(currentPlayerData.level ?? 1);
     currentPlayerData.user_id = getUserId();
     await loadSpecies();
-    await Promise.all([refreshInventory(), refreshTesters(), refreshGarden()]);
+    await Promise.all([refreshInventory(), refreshFlowers(), refreshTesters(), refreshGarden()]);
     await initOnboarding(getUserId(), async () => { await refreshInventory(); });
     await initPots(speciesList, currentPlayerData, onHarvest, currentGarden, refreshInventory);
     initMysterySeed(async () => { await refreshInventory(); }, () => currentPlayerData.level ?? 1);
 
-    // ── Bouton Livrer ────────────────────────────────────────────
+    // ── Bouton Livrer (cargo = fleurs) ────────────────────────────────────────
     const deliverBtn = document.getElementById('deliver-btn');
     if (deliverBtn) {
       deliverBtn.addEventListener('click', () => {
-        const cargo = totalSeedCount();
-        if (cargo === 0) { showToast('Aucune graine à livrer !', 'error'); return; }
+        const cargo = totalFlowerCount(currentFlowers);
+        if (cargo === 0) { showToast('Aucune fleur à livrer !', 'error'); return; }
         launchDeliveryGame(
           cargo,
-          async (coinsEarned, _delivered) => {
-            // Récompense
+          async (coinsEarned) => {
             currentPlayerData.coins += coinsEarned;
             renderPlayerStats(currentPlayerData);
             renderGarden(currentGarden, currentPlayerData.coins, onBuyGardenEffect);
             showToast(`🚗 Livraison réussie ! +🪙 ${coinsEarned} pièces`, 'success');
-            // Sync coins cloud
             await supabase.from('botanica_player_data')
               .update({ coins: currentPlayerData.coins })
               .eq('user_id', getUserId());
