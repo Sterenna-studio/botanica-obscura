@@ -82,8 +82,17 @@
   gap: .5rem;
 }
 
-.pot-parent-slot {
+/* Wrapper pour le slot + bouton × */
+.pot-parent-wrap {
   flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.pot-parent-slot {
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -115,6 +124,28 @@
 .pot-parent-slot.rarity-seed-epic      { border-color: rgba(176,96,240,.5); }
 .pot-parent-slot.rarity-seed-legendary { border-color: rgba(240,160,32,.55); }
 .pot-parent-slot.rarity-seed-mythic    { border-color: rgba(240,80,80,.55); }
+
+/* Bouton × pour retirer une graine sélectionnée */
+.pot-parent-clear {
+  display: block;
+  width: 100%;
+  margin-top: .25rem;
+  padding: .18rem 0;
+  background: rgba(255,80,80,.08);
+  border: 1px solid rgba(255,80,80,.25);
+  border-radius: 6px;
+  color: rgba(255,120,120,.8);
+  font-size: .72rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
+  line-height: 1;
+}
+.pot-parent-clear:hover {
+  background: rgba(255,80,80,.2);
+  border-color: rgba(255,80,80,.5);
+  color: #ff8080;
+}
 
 .pot-parent-sprite {
   width: 48px;
@@ -256,9 +287,12 @@
 
 .pot-status-msg {
   font-size: .78rem;
-  color: #a8e06a;
+  color: #888;
   min-height: 1rem;
   text-align: center;
+}
+.pot-status-msg.pot-status-valid {
+  color: #a8e06a;
 }
 
 /* ── Slot verrouillé ──────────────────────────────────────────────── */
