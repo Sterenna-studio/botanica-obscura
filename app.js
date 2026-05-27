@@ -14,7 +14,7 @@ import { computeHarvestXp } from './lib/xp.js';
 import { computeHarvestQuantity } from './lib/harvestQuantity.js';
 import { performSeedDrop } from './lib/seedDrop.js';
 import { loadFlowers, addFlowers, renderFlowers, totalFlowerCount } from './lib/flowerInventory.js';
-import { launchDeliveryGame } from './lib/deliveryGame.js';
+import { openSellModal } from './lib/sellModal.js';
 import { loadBaseSpecies, renderSeedShop } from './lib/seedShop.js';
 import { initTabs } from './lib/tabs.js';
 import {
@@ -70,10 +70,6 @@ function getInventoryQties() {
   );
 }
 
-function totalSeedCount() {
-  return currentInventorySeeds.reduce((sum, s) => sum + (Number(s.quantity) || 0), 0);
-}
-
 function openSpeciesPanel(species) {
   renderSpeciesPanel(
     species, speciesList, getInventoryQties(),
@@ -111,8 +107,7 @@ function showHarvestReveal(species, qualityTier, xpGained, flowerQty, seedDrops,
     if (seedDrops?.length) {
       const labels = seedDrops.map(d => {
         const sp = speciesList.find(s => Number(s.id) === Number(d.speciesId));
-        const spName = sp?.name ?? `espèce #${d.speciesId}`;
-        return `🌱 +${d.qty} graine${d.qty > 1 ? 's' : ''} de ${spName}`;
+        return `🌱 +${d.qty} graine${d.qty > 1 ? 's' : ''} de ${sp?.name ?? `espèce #${d.speciesId}`}`;
       });
       seedDropEl.innerHTML = labels.join('<br>');
       seedDropEl.style.display = '';
@@ -148,7 +143,6 @@ async function loadSpecies() {
     .eq('user_id', userId);
 
   if (codexErr) {
-    console.warn('[app] Chargement codex cloud échoué, fallback local :', codexErr.message);
     playerCodexIds       = new Set(loadLocal()?.codexIds ?? []);
     playerFirstServerIds = new Set(loadLocal()?.firstServerCodexIds ?? []);
   } else {
@@ -284,12 +278,12 @@ function setupCodexControls() {
   });
 }
 
-function renderDeliverBtn() {
-  const btn = document.getElementById('deliver-btn');
+function renderSellBtn() {
+  const btn = document.getElementById('sell-all-btn');
   if (!btn) return;
   const total = totalFlowerCount(currentFlowers);
   btn.disabled = total === 0;
-  btn.innerHTML = `🚗 Livrer (${total} fleur${total !== 1 ? 's' : ''})`;
+  btn.innerHTML = `💰 Vendre (${total} fleur${total !== 1 ? 's' : ''})`;
 }
 
 async function refreshShop() {
@@ -326,7 +320,8 @@ async function refreshInventory() {
 
 async function refreshFlowers() {
   currentFlowers = await loadFlowers(getUserId());
-  renderFlowers(currentFlowers,
+  renderFlowers(
+    currentFlowers,
     (newCoins) => {
       currentPlayerData.coins = newCoins;
       renderPlayerStats(currentPlayerData);
@@ -334,7 +329,7 @@ async function refreshFlowers() {
     },
     getUserId()
   );
-  renderDeliverBtn();
+  renderSellBtn();
 }
 
 async function refreshTesters() {
@@ -423,7 +418,7 @@ async function onHarvest(harvestResult, xpResult) {
 }
 
 async function init() {
-  initTabs();  // ← initialise les onglets en premier (avant le réseau)
+  initTabs();
   restorePotNotification();
   setupCodexControls();
   await restoreStarSession();
@@ -444,25 +439,20 @@ async function init() {
     await initPots(speciesList, currentPlayerData, onHarvest, currentGarden, refreshInventory);
     initMysterySeed(async () => { await refreshInventory(); }, () => currentPlayerData.level ?? 1);
 
-    const deliverBtn = document.getElementById('deliver-btn');
-    if (deliverBtn) {
-      deliverBtn.addEventListener('click', () => {
-        const cargo = totalFlowerCount(currentFlowers);
-        if (cargo === 0) { showToast('Aucune fleur à livrer !', 'error'); return; }
-        launchDeliveryGame(
-          cargo,
-          async (coinsEarned) => {
-            currentPlayerData.coins += coinsEarned;
+    // ── Bouton Vendre → ouvre la modal inline ──────────────────────────────
+    const sellBtn = document.getElementById('sell-all-btn');
+    if (sellBtn) {
+      sellBtn.addEventListener('click', () => {
+        if (!currentFlowers.length) { showToast('Aucune fleur à vendre !', 'error'); return; }
+        openSellModal(currentFlowers, getUserId(), async (newCoins, earned, lost) => {
+          if (newCoins !== null) {
+            currentPlayerData.coins = newCoins;
             renderPlayerStats(currentPlayerData);
             renderGarden(currentGarden, currentPlayerData.coins, onBuyGardenEffect);
-            showToast(`🚗 Livraison réussie ! +🪙 ${coinsEarned} pièces`, 'success');
-            await supabase.from('botanica_player_data')
-              .update({ coins: currentPlayerData.coins })
-              .eq('user_id', getUserId());
             refreshShop();
-          },
-          () => showToast('🚨 Arrêté par la police ! Cargo confisqué.', 'error')
-        );
+          }
+          await refreshFlowers();
+        });
       });
     }
   });
