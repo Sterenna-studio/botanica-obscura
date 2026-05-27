@@ -6,6 +6,7 @@
     <title>Botanica Obscura</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%8C%BF%3C%2Ftext%3E%3C%2Fsvg%3E" />
     <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles/tabs.css" />
     <link rel="stylesheet" href="styles/garden.css" />
     <link rel="stylesheet" href="styles/inventory.css" />
     <link rel="stylesheet" href="styles/toast.css" />
@@ -21,10 +22,12 @@
     <link rel="stylesheet" href="styles/seedShop.css" />
   </head>
   <body>
+
+    <!-- ── Topbar ──────────────────────────────────────────────────── -->
     <header class="topbar">
       <div class="topbar-left">
-        <a href="/star/" class="back-to-star">&larr; Star</a>
-        <div class="topbar-title"><h1>🌿 Botanica Obscura</h1></div>
+        <a href="/star/" class="back-to-star">&larr;</a>
+        <h1>🌿 Botanica</h1>
       </div>
       <div class="player-stats">
         <span id="coins">🪙 0</span>
@@ -35,19 +38,19 @@
           </div>
           <span id="xp-text" class="xp-text">0 / 100 XP</span>
         </div>
-        <span id="pot-slots-badge">🪴 1 slot</span>
+        <span id="pot-slots-badge">🪴 1</span>
         <div id="authZone" class="auth-zone">
           <div id="userBadge" class="user-badge" style="display:none">
             <span class="auth-avatar-placeholder">🌿</span>
             <span class="auth-username"></span>
           </div>
         </div>
-        <a href="leaderboard.html" class="nav-link">🏆 Classement</a>
+        <a href="leaderboard.html" class="nav-link">🏆</a>
         <a href="profil.html" class="nav-link">🌱 Profil</a>
       </div>
     </header>
 
-    <!-- Overlay level-up -->
+    <!-- ── Overlays ────────────────────────────────────────────────── -->
     <div id="levelup-overlay" class="levelup-overlay" style="display:none">
       <div class="levelup-card">
         <div class="levelup-emoji">🌟</div>
@@ -58,7 +61,6 @@
       </div>
     </div>
 
-    <!-- Overlay récolte -->
     <div id="harvest-reveal-overlay" class="harvest-reveal-overlay" style="display:none">
       <div class="harvest-reveal-card">
         <div id="harvest-reveal-first" class="harvest-reveal-first">🏅 Première découverte mondiale !</div>
@@ -73,56 +75,34 @@
       </div>
     </div>
 
-    <main class="layout">
+    <!-- ── Barre d'onglets ─────────────────────────────────────────── -->
+    <nav class="tabs-bar" role="tablist" aria-label="Navigation principale">
+      <button class="tab-btn" data-tab="lab"      role="tab">🧪 Labo</button>
+      <button class="tab-btn" data-tab="harvest"  role="tab">🌸 Récolte</button>
+      <button class="tab-btn" data-tab="shop"     role="tab">🏪 Boutique</button>
+      <button class="tab-btn" data-tab="codex"    role="tab">📖 Codex</button>
+    </nav>
 
-      <section class="panel full-width" id="pots-section">
+    <!-- ════════════════════════════════════════════════════════════════
+         ONGLET 1 — LABO
+         Pots de mutation + sélection graines
+    ═══════════════════════════════════════════════════════════════════ -->
+    <div class="tab-panel" data-tab="lab" role="tabpanel">
+
+      <section class="panel" id="pots-section">
         <h2>🧪 Pots de mutation</h2>
-        <p class="muted">Combinez deux graines pour faire pousser une mutation. Débloquez de nouveaux slots en montant de niveau (Lv.4, Lv.5, Lv.8).</p>
+        <p class="muted">Combinez deux graines pour créer une mutation. Nouveaux slots à Lv.4, Lv.5, Lv.8.</p>
         <div id="pots-grid" class="pots-grid-wrap"></div>
       </section>
 
-      <section class="panel full-width">
-        <div id="mystery-seed-zone">
-          <h3>📦 Colis mystère</h3>
-          <p class="muted">Une graine aléatoire Tier 1 toutes les 12h.</p>
-          <button id="mystery-seed-btn">📦 Récupérer ma graine mystère</button>
-          <div id="mystery-seed-countdown"></div>
-          <div id="mystery-seed-msg"></div>
-        </div>
+      <section class="panel">
+        <h2>🌱 Graines disponibles</h2>
+        <p class="muted">Cliquez une graine pour la placer dans le prochain pot libre.</p>
+        <div id="inventoryEmpty" class="muted" style="display:none">Aucune graine — achetez-en dans la Boutique !</div>
+        <div id="inventoryGrid" class="inventory-grid"></div>
       </section>
 
-      <!-- FLEURS (à vendre / livrer) -->
-      <details class="panel full-width collapsible-zone" open>
-        <summary class="zone-summary">🌸 Fleurs récoltées</summary>
-        <div class="zone-content">
-          <p class="muted">Les fleurs sont le produit de vos mutations. Vendez-les au NPC ou livrez-les pour gagner plus de pièces.</p>
-          <button id="deliver-btn" disabled>🚗 Livrer (0 fleur)</button>
-          <div id="flowersEmpty" class="muted" style="display:none">Aucune fleur pour l'instant. Récoltez un pot !</div>
-          <div id="flowersGrid" class="inventory-grid"></div>
-        </div>
-      </details>
-
-      <!-- BOUTIQUE DE GRAINES -->
-      <details class="panel full-width collapsible-zone">
-        <summary class="zone-summary">🏪 Boutique de graines</summary>
-        <div class="zone-content">
-          <p class="muted">Achetez des graines de base avec vos pièces pour remplir vos pots de mutation.</p>
-          <div id="shopEmpty" class="muted" style="display:none">Boutique indisponible.</div>
-          <div id="shopGrid"></div>
-        </div>
-      </details>
-
-      <!-- GRAINES (à planter) -->
-      <details class="panel full-width collapsible-zone" open>
-        <summary class="zone-summary">🌱 Graines (à planter)</summary>
-        <div class="zone-content">
-          <p class="muted">Les graines servent uniquement à remplir les pots de mutation. Elles viennent des espèces parentes lors de la récolte (70% de chance, 1-3 graines par parent).</p>
-          <div id="inventoryEmpty" class="muted" style="display:none">Aucune graine pour l'instant.</div>
-          <div id="inventoryGrid" class="inventory-grid"></div>
-        </div>
-      </details>
-
-      <details class="panel full-width collapsible-zone" id="garden-section" style="display:none">
+      <details class="panel collapsible-zone" id="garden-section" style="display:none">
         <summary class="zone-summary">🌡️ Jardin &amp; Améliorations</summary>
         <div class="zone-content">
           <p class="muted">Améliorez votre jardin pour augmenter la qualité et la quantité de vos récoltes.</p>
@@ -130,7 +110,7 @@
         </div>
       </details>
 
-      <details class="panel full-width collapsible-zone" id="testers-section" style="display:none">
+      <details class="panel collapsible-zone" id="testers-section" style="display:none">
         <summary class="zone-summary">🧑‍🌾 Testeurs</summary>
         <div class="zone-content">
           <p class="muted">Récoltez une plante puis faites-la goûter à vos testeurs !</p>
@@ -138,40 +118,87 @@
         </div>
       </details>
 
-      <details class="panel full-width collapsible-zone">
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         ONGLET 2 — RÉCOLTE
+         Fleurs récoltées + vente
+    ═══════════════════════════════════════════════════════════════════ -->
+    <div class="tab-panel" data-tab="harvest" role="tabpanel">
+
+      <section class="panel">
+        <h2>🌸 Fleurs récoltées</h2>
+        <p class="muted">Les fleurs sont le produit de vos mutations. Vendez-les au NPC ou livrez-les pour gagner plus de pièces.</p>
+        <button id="deliver-btn" disabled>🚗 Livrer (0 fleur)</button>
+        <div id="flowersEmpty" class="muted" style="display:none">Aucune fleur pour l'instant — récoltez un pot !</div>
+        <div id="flowersGrid" class="inventory-grid"></div>
+      </section>
+
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         ONGLET 3 — BOUTIQUE
+         Graines de base + colis mystère
+    ═══════════════════════════════════════════════════════════════════ -->
+    <div class="tab-panel" data-tab="shop" role="tabpanel">
+
+      <section class="panel">
+        <div id="mystery-seed-zone">
+          <h2>📦 Colis mystère</h2>
+          <p class="muted">Une graine aléatoire Tier 0 toutes les 12h — gratuite !</p>
+          <button id="mystery-seed-btn">📦 Récupérer ma graine mystère</button>
+          <div id="mystery-seed-countdown"></div>
+          <div id="mystery-seed-msg"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>🏪 Graines de base</h2>
+        <p class="muted">Achetez des graines pour remplir vos pots. Les prix varient selon la rareté.</p>
+        <div id="shopEmpty" class="muted" style="display:none">Boutique indisponible.</div>
+        <div id="shopGrid"></div>
+      </section>
+
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         ONGLET 4 — CODEX
+         Arbre des mutations + codex filtrable
+    ═══════════════════════════════════════════════════════════════════ -->
+    <div class="tab-panel" data-tab="codex" role="tabpanel">
+
+      <details class="panel collapsible-zone">
         <summary class="zone-summary">🗺️ Arbre des mutations</summary>
         <div class="zone-content">
-          <p class="muted">Clique sur un nœud pour voir la recette et envoyer directement dans un pot.</p>
+          <p class="muted">Clique sur un nœud pour voir la recette et envoyer dans un pot.</p>
           <div id="mutationTree" class="mutation-tree-wrap"></div>
         </div>
       </details>
 
-      <details class="panel full-width collapsible-zone" open>
-        <summary class="zone-summary">📖 Codex botanique global</summary>
-        <div class="zone-content">
-          <p class="muted">Cliquez une espèce pour voir sa recette, ses prix NPC et la lancer en craft.</p>
-          <div id="codexSummary" class="codex-summary" aria-live="polite"></div>
-          <div class="codex-toolbar" aria-label="Filtres du codex botanique">
-            <label>Tier<select id="codexTierFilter"><option value="all">Tous</option></select></label>
-            <label>Rareté<select id="codexRarityFilter"><option value="all">Toutes</option></select></label>
-            <label>État
-              <select id="codexStateFilter">
-                <option value="all">Tous</option>
-                <option value="unlocked">Débloquées</option>
-                <option value="server-known">Connues serveur</option>
-                <option value="unknown">Inconnues</option>
-              </select>
-            </label>
-            <label class="codex-search-label">Recherche
-              <input id="codexSearch" type="search" placeholder="Nom, description..." autocomplete="off" />
-            </label>
-            <button id="codexResetFilters" class="codex-reset-btn" type="button">Réinitialiser</button>
-          </div>
-          <div id="codexGrid" class="codex-grid"></div>
+      <section class="panel">
+        <h2>📖 Codex botanique</h2>
+        <div id="codexSummary" class="codex-summary" aria-live="polite"></div>
+        <div class="codex-toolbar" aria-label="Filtres du codex botanique">
+          <label>Tier<select id="codexTierFilter"><option value="all">Tous</option></select></label>
+          <label>Rareté<select id="codexRarityFilter"><option value="all">Toutes</option></select></label>
+          <label>État
+            <select id="codexStateFilter">
+              <option value="all">Tous</option>
+              <option value="unlocked">Débloquées</option>
+              <option value="server-known">Connues serveur</option>
+              <option value="unknown">Inconnues</option>
+            </select>
+          </label>
+          <label class="codex-search-label">Recherche
+            <input id="codexSearch" type="search" placeholder="Nom, description..." autocomplete="off" />
+          </label>
+          <button id="codexResetFilters" class="codex-reset-btn" type="button">Réinitialiser</button>
         </div>
-      </details>
+        <div id="codexGrid" class="codex-grid"></div>
+      </section>
 
-    </main>
+    </div>
+
     <script type="module" src="app.js"></script>
   </body>
 </html>

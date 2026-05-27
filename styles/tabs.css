@@ -1,0 +1,162 @@
+/* ─────────────────────────────────────────────────────────────────────
+   tabs.css — Navigation principale Botanica Obscura
+───────────────────────────────────────────────────────────────────── */
+
+/* ── Barre d'onglets ─────────────────────────────────────────────── */
+.tabs-bar {
+  display: flex;
+  gap: 6px;
+  padding: 14px 24px 0;
+  border-bottom: 1px solid var(--border);
+  background: rgba(0,0,0,0.18);
+  position: sticky;
+  top: 64px; /* sous la topbar */
+  z-index: 9;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs-bar::-webkit-scrollbar { display: none; }
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  border-radius: 0;
+  color: var(--muted);
+  font-size: 0.93rem;
+  font-weight: 700;
+  padding: 10px 20px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.18s, border-color 0.18s;
+  letter-spacing: 0.02em;
+}
+.tab-btn:hover  { color: var(--text); }
+.tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* ── Panneaux ────────────────────────────────────────────────────── */
+.tab-panel {
+  display: none;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px;
+  animation: tab-fade 0.2s ease;
+}
+.tab-panel.active {
+  display: flex;
+}
+@keyframes tab-fade {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Topbar allégée ──────────────────────────────────────────────── */
+.topbar {
+  height: 64px;
+  padding: 0 24px;
+  flex-wrap: nowrap;
+}
+.topbar h1 { font-size: 1.15rem; }
+
+.player-stats {
+  gap: 14px;
+  font-size: 0.9rem;
+}
+
+/* coins + XP côte à côte, compacts */
+#coins {
+  background: rgba(240,192,48,0.12);
+  border: 1px solid rgba(240,192,48,0.3);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.level-xp-block {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+#level {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+}
+.xp-bar-wrap {
+  width: 70px;
+  height: 6px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.xp-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #a8e060);
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+#xp-text {
+  font-size: 0.75rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* slots badge compact */
+#pot-slots-badge {
+  font-size: 0.82rem;
+  color: var(--muted);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 3px 10px;
+}
+
+/* liens nav -> discrets */
+.nav-link {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 4px 10px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  transition: color 0.18s, border-color 0.18s;
+}
+.nav-link:hover {
+  color: var(--accent);
+  border-color: var(--border);
+}
+
+/* ── Layout interne panneaux ─────────────────────────────────────── */
+.tab-panel .panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 22px;
+}
+.tab-panel .panel h2,
+.tab-panel .panel h3 {
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+/* collapsible dans les panels */
+.tab-panel .collapsible-zone { padding: 0; }
+.tab-panel .zone-summary {
+  padding: 16px 20px;
+  font-size: 0.97rem;
+}
+
+/* ── Responsive mobile ───────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .tab-btn { padding: 10px 14px 12px; font-size: 0.85rem; }
+  .tab-panel { padding: 16px; gap: 16px; }
+  #xp-text { display: none; }
+  .nav-link { display: none; }
+}

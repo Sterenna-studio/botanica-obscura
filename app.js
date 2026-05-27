@@ -16,6 +16,7 @@ import { performSeedDrop } from './lib/seedDrop.js';
 import { loadFlowers, addFlowers, renderFlowers, totalFlowerCount } from './lib/flowerInventory.js';
 import { launchDeliveryGame } from './lib/deliveryGame.js';
 import { loadBaseSpecies, renderSeedShop } from './lib/seedShop.js';
+import { initTabs } from './lib/tabs.js';
 import {
   initPots,
   selectSpeciesForNextPot,
@@ -108,7 +109,6 @@ function showHarvestReveal(species, qualityTier, xpGained, flowerQty, seedDrops,
 
   if (seedDropEl) {
     if (seedDrops?.length) {
-      // Enrichit les noms avec speciesList si disponible
       const labels = seedDrops.map(d => {
         const sp = speciesList.find(s => Number(s.id) === Number(d.speciesId));
         const spName = sp?.name ?? `espèce #${d.speciesId}`;
@@ -179,7 +179,6 @@ function getCodexSearchText(species) {
 }
 
 function getFilteredSpecies() {
-  const search = codexFilters.search.trim().toLowerCase();
   return speciesList.filter(s => {
     const state = getCodexState(s);
     if (codexFilters.tier   !== 'all' && String(s.tier)   !== codexFilters.tier)   return false;
@@ -293,17 +292,16 @@ function renderDeliverBtn() {
   btn.innerHTML = `🚗 Livrer (${total} fleur${total !== 1 ? 's' : ''})`;
 }
 
-// ── Rafraîchissement boutique ─────────────────────────────────────────────────────────
 async function refreshShop() {
   if (!baseSpecies.length) baseSpecies = await loadBaseSpecies();
-  renderSeedShop(baseSpecies, currentPlayerData.coins, getUserId(), async (newCoins) => {
+  const onBuy = async (newCoins) => {
     currentPlayerData.coins = newCoins;
     renderPlayerStats(currentPlayerData);
     renderGarden(currentGarden, newCoins, onBuyGardenEffect);
-    // Reaffiche la boutique avec les nouvelles pièces (boutons disabled/enabled)
-    renderSeedShop(baseSpecies, currentPlayerData.coins, getUserId(), arguments.callee);
+    renderSeedShop(baseSpecies, currentPlayerData.coins, getUserId(), onBuy);
     await refreshInventory();
-  });
+  };
+  renderSeedShop(baseSpecies, currentPlayerData.coins, getUserId(), onBuy);
 }
 
 async function refreshInventory() {
@@ -382,7 +380,6 @@ async function onHarvest(harvestResult, xpResult) {
     ? { ...harvestResult.result_species, quality_tier_id: harvestResult.quality_tier_id ?? 1 }
     : null;
 
-  // ── 1. Fleurs récoltées (espèce mutée) ────────────────────────────────────
   const flowerQty = computeHarvestQuantity(
     harvestResult.quality_tier_id ?? 1,
     currentGarden,
@@ -398,15 +395,12 @@ async function onHarvest(harvestResult, xpResult) {
     patchLocal('firstServerCodexIds', [...playerFirstServerIds]);
   }
 
-  // ── 2. Graines parentes (drop 1-3, 70% par parent) ──────────────────────────
-  // species_a_id / species_b_id maintenant retournés par l'edge function v9
   const { drops: seedDrops } = await performSeedDrop(
     getUserId(),
     harvestResult.species_a_id,
     harvestResult.species_b_id
   );
 
-  // ── 3. XP / level ─────────────────────────────────────────────────────────
   currentPlayerData = { ...currentPlayerData, xp: xpResult.newXp, level: xpResult.newLevel, coins: xpResult.newCoins, pot_slots: xpResult.newPotSlots ?? currentPlayerData.pot_slots };
   renderPlayerStats(currentPlayerData);
   applyLevelGating(currentPlayerData.level ?? 1);
@@ -424,11 +418,12 @@ async function onHarvest(harvestResult, xpResult) {
   );
 
   await Promise.all([loadSpecies(), refreshInventory(), refreshFlowers(), refreshTesters()]);
-  refreshShop(); // re-render boutique avec coins à jour
+  refreshShop();
   renderGarden(currentGarden, currentPlayerData.coins, onBuyGardenEffect);
 }
 
 async function init() {
+  initTabs();  // ← initialise les onglets en premier (avant le réseau)
   restorePotNotification();
   setupCodexControls();
   await restoreStarSession();
@@ -444,12 +439,11 @@ async function init() {
     currentPlayerData.user_id = getUserId();
     await loadSpecies();
     await Promise.all([refreshInventory(), refreshFlowers(), refreshTesters(), refreshGarden()]);
-    await refreshShop(); // charge et affiche la boutique
+    await refreshShop();
     await initOnboarding(getUserId(), async () => { await refreshInventory(); });
     await initPots(speciesList, currentPlayerData, onHarvest, currentGarden, refreshInventory);
     initMysterySeed(async () => { await refreshInventory(); }, () => currentPlayerData.level ?? 1);
 
-    // ── Bouton Livrer (cargo = fleurs) ────────────────────────────────────────
     const deliverBtn = document.getElementById('deliver-btn');
     if (deliverBtn) {
       deliverBtn.addEventListener('click', () => {
@@ -465,7 +459,7 @@ async function init() {
             await supabase.from('botanica_player_data')
               .update({ coins: currentPlayerData.coins })
               .eq('user_id', getUserId());
-            refreshShop(); // Debloquer des achats si on avait peu de pièces
+            refreshShop();
           },
           () => showToast('🚨 Arrêté par la police ! Cargo confisqué.', 'error')
         );
