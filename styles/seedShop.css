@@ -1,0 +1,92 @@
+/* ──────────────────────────────────────────────────────────────────
+   seedShop.css — Boutique de graines
+────────────────────────────────────────────────────────────────── */
+
+#shopGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.shop-card {
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(255,255,255,0.10);
+  border-radius: 12px;
+  padding: 14px 12px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: border-color 0.2s, transform 0.15s;
+}
+.shop-card:hover { transform: translateY(-2px); }
+
+/* Bordures rareté (réutilise les classes inventory.css) */
+.rarity-border-common    { border-color: #6aaa64; }
+.rarity-border-rare      { border-color: #4a90d9; }
+.rarity-border-epic      { border-color: #9b59b6; }
+.rarity-border-legendary { border-color: #e67e22; }
+.rarity-border-mythic    { border-color: #e74c3c; }
+
+.shop-sprite {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.shop-sprite svg { width: 100%; height: 100%; }
+
+.shop-info {
+  text-align: center;
+  width: 100%;
+}
+.shop-name {
+  font-weight: 700;
+  font-size: 0.95em;
+  margin-bottom: 4px;
+  color: #e8e8e8;
+}
+.shop-meta {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.shop-tier {
+  font-size: 0.75em;
+  color: #aaa;
+  background: rgba(255,255,255,0.07);
+  padding: 1px 7px;
+  border-radius: 8px;
+}
+.shop-desc {
+  font-size: 0.78em;
+  color: #999;
+  line-height: 1.35;
+  min-height: 2.5em;
+}
+
+.shop-buy-btn {
+  width: 100%;
+  padding: 8px 0;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.92em;
+  font-weight: 700;
+  cursor: pointer;
+  background: linear-gradient(135deg, #2d8a4e, #1e6b3a);
+  color: #fff;
+  letter-spacing: 0.3px;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.shop-buy-btn:hover:not([disabled]) { opacity: 0.88; transform: scale(1.02); }
+.shop-buy-btn.shop-btn-disabled,
+.shop-buy-btn[disabled] {
+  background: #333;
+  color: #666;
+  cursor: not-allowed;
+  opacity: 0.7;
+}

@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="styles/discovery.css" />
     <link rel="stylesheet" href="styles/speciesPanel.css" />
     <link rel="stylesheet" href="styles/deliveryGame.css" />
+    <link rel="stylesheet" href="styles/seedShop.css" />
   </head>
   <body>
     <header class="topbar">
@@ -98,6 +99,16 @@
           <button id="deliver-btn" disabled>🚗 Livrer (0 fleur)</button>
           <div id="flowersEmpty" class="muted" style="display:none">Aucune fleur pour l'instant. Récoltez un pot !</div>
           <div id="flowersGrid" class="inventory-grid"></div>
+        </div>
+      </details>
+
+      <!-- BOUTIQUE DE GRAINES -->
+      <details class="panel full-width collapsible-zone">
+        <summary class="zone-summary">🏪 Boutique de graines</summary>
+        <div class="zone-content">
+          <p class="muted">Achetez des graines de base avec vos pièces pour remplir vos pots de mutation.</p>
+          <div id="shopEmpty" class="muted" style="display:none">Boutique indisponible.</div>
+          <div id="shopGrid"></div>
         </div>
       </details>
 
