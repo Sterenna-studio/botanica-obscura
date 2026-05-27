@@ -1,0 +1,205 @@
+/* ────────────────────────────────────────────────────────────────
+   seedPicker.css — Modal de sélection de graine
+──────────────────────────────────────────────────────────────── */
+
+.sp-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.7);
+  backdrop-filter: blur(6px);
+  z-index: 400;
+  display: flex;
+  align-items: flex-end;       /* drawer depuis le bas sur mobile */
+  justify-content: center;
+  padding: 0;
+  animation: sp-fade-in .18s ease;
+}
+
+@media (min-width: 600px) {
+  .sp-overlay { align-items: center; padding: var(--space-4, 1rem); }
+}
+
+@keyframes sp-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.sp-card {
+  background: var(--bg-panel, #1e1e1e);
+  border: 1px solid var(--border, rgba(255,255,255,.12));
+  border-radius: 20px 20px 0 0;
+  padding: 1.25rem 1rem 1.5rem;
+  width: 100%;
+  max-width: 480px;
+  max-height: 80dvh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: .85rem;
+  animation: sp-slide-up .22s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+@media (min-width: 600px) {
+  .sp-card {
+    border-radius: 20px;
+    max-height: 70dvh;
+    animation: sp-reveal .22s cubic-bezier(0.34,1.56,0.64,1);
+  }
+}
+
+@keyframes sp-slide-up {
+  from { transform: translateY(40px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+@keyframes sp-reveal {
+  from { transform: scale(.92); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+.sp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sp-title {
+  font-weight: 700;
+  font-size: .95rem;
+  color: var(--accent, #a8e06a);
+}
+
+.sp-close {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.08);
+  border: none;
+  color: #aaa;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s, color .15s;
+}
+.sp-close:hover { background: rgba(255,255,255,.16); color: #fff; }
+
+.sp-clear-btn {
+  width: 100%;
+  padding: .45rem;
+  background: rgba(240,80,80,.1);
+  border: 1px solid rgba(240,80,80,.25);
+  border-radius: 10px;
+  color: #f05050;
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+}
+.sp-clear-btn:hover { background: rgba(240,80,80,.18); }
+
+/* Grille de cards */
+.sp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: .6rem;
+}
+
+.sp-seed-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .3rem;
+  padding: .55rem .3rem .45rem;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, transform .15s, box-shadow .15s;
+  text-align: center;
+}
+
+.sp-seed-card:hover {
+  background: rgba(168,224,106,.08);
+  border-color: rgba(168,224,106,.35);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(168,224,106,.15);
+}
+
+.sp-seed-card:focus-visible {
+  outline: 2px solid var(--accent, #a8e06a);
+  outline-offset: 2px;
+}
+
+.sp-seed-card.sp-seed-active {
+  background: rgba(168,224,106,.14);
+  border-color: rgba(168,224,106,.6);
+  box-shadow: 0 0 0 2px rgba(168,224,106,.25);
+}
+
+/* Couleurs rareté en bordure */
+.sp-seed-card.rarity-seed-common    { --seed-rarity-color: #aaa; }
+.sp-seed-card.rarity-seed-rare      { --seed-rarity-color: #5b9fef; }
+.sp-seed-card.rarity-seed-epic      { --seed-rarity-color: #b060f0; }
+.sp-seed-card.rarity-seed-legendary { --seed-rarity-color: #f0a020; }
+.sp-seed-card.rarity-seed-mythic    { --seed-rarity-color: #f05050; }
+
+.sp-seed-card:hover,
+.sp-seed-card.sp-seed-active {
+  border-color: var(--seed-rarity-color);
+}
+
+.sp-seed-sprite {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sp-seed-sprite svg { width: 100%; height: 100%; }
+
+.sp-seed-name {
+  font-size: .72rem;
+  font-weight: 600;
+  color: #ddd;
+  line-height: 1.2;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sp-seed-meta {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+}
+
+.rarity-dot-common    { background: #aaa; }
+.rarity-dot-rare      { background: #5b9fef; }
+.rarity-dot-epic      { background: #b060f0; }
+.rarity-dot-legendary { background: #f0a020; }
+.rarity-dot-mythic    { background: #f05050; }
+
+[class^="rarity-dot-"],
+[class*=" rarity-dot-"] {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.sp-seed-qty {
+  font-size: .7rem;
+  color: #888;
+}
+
+.sp-empty {
+  text-align: center;
+  color: #888;
+  font-size: .85rem;
+  line-height: 1.5;
+  padding: 1rem 0;
+}

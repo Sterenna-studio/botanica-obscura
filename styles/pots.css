@@ -18,13 +18,8 @@
   transition: border-color .2s, box-shadow .2s, transform .2s;
 }
 
-.multi-pot-card.pot-active {
-  border-color: rgba(111,207,58,.35);
-}
-
-.multi-pot-card.pot-empty {
-  border-color: rgba(168,224,106,.18);
-}
+.multi-pot-card.pot-active  { border-color: rgba(111,207,58,.35); }
+.multi-pot-card.pot-empty   { border-color: rgba(168,224,106,.18); }
 
 .multi-pot-card.pot-placement-focus {
   border-color: rgba(240,192,48,.75);
@@ -48,7 +43,7 @@
   50%       { box-shadow: 0 0 28px rgba(111,207,58,.5); }
 }
 
-/* Header slot */
+/* ── Header ─────────────────────────────────────────────────────── */
 .pot-slot-header {
   display: flex;
   justify-content: space-between;
@@ -78,15 +73,95 @@
   color: #a0a0a0;
   font-variant-numeric: tabular-nums;
 }
+.pot-timer.pot-timer-ready { color: #6fcf3a; font-weight: 700; }
 
-.pot-timer.pot-timer-ready {
-  color: #6fcf3a;
-  font-weight: 700;
+/* ── Picker parents (slot vide) ──────────────────────────────────── */
+.pot-parents-picker {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
 }
 
-/* Parents */
-.pot-parents,
-.pot-selection-preview {
+.pot-parent-slot {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .25rem;
+  padding: .55rem .3rem .45rem;
+  background: rgba(255,255,255,.04);
+  border: 1.5px dashed rgba(255,255,255,.18);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, transform .15s;
+  min-height: 96px;
+  text-align: center;
+}
+
+.pot-parent-slot.has-seed {
+  border-style: solid;
+  border-color: rgba(168,224,106,.45);
+  background: rgba(168,224,106,.06);
+}
+
+.pot-parent-slot:hover {
+  background: rgba(168,224,106,.1);
+  border-color: rgba(168,224,106,.55);
+  transform: translateY(-2px);
+}
+
+/* Couleur de bord selon rareté */
+.pot-parent-slot.rarity-seed-rare      { border-color: rgba(91,159,239,.5); }
+.pot-parent-slot.rarity-seed-epic      { border-color: rgba(176,96,240,.5); }
+.pot-parent-slot.rarity-seed-legendary { border-color: rgba(240,160,32,.55); }
+.pot-parent-slot.rarity-seed-mythic    { border-color: rgba(240,80,80,.55); }
+
+.pot-parent-sprite {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pot-parent-sprite svg { width: 100%; height: 100%; }
+
+.pot-parent-name {
+  font-size: .7rem;
+  font-weight: 600;
+  color: #ddd;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.pot-parent-qty {
+  font-size: .68rem;
+  color: #888;
+}
+
+.pot-parent-empty-icon {
+  font-size: 1.4rem;
+  color: rgba(168,224,106,.35);
+  line-height: 1;
+  margin-top: .2rem;
+}
+
+.pot-parent-empty-label {
+  font-size: .72rem;
+  color: #666;
+}
+
+.pot-cross-big {
+  font-size: 1rem;
+  color: rgba(255,255,255,.3);
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Parents actifs (pot en cours) ───────────────────────────────── */
+.pot-parents {
   display: flex;
   align-items: center;
   gap: .4rem;
@@ -95,40 +170,16 @@
   flex-wrap: wrap;
 }
 
-.pot-selection-preview {
-  justify-content: center;
-  background: rgba(0,0,0,.18);
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 10px;
-  padding: .45rem .5rem;
-}
-
-.pot-parent,
-.pot-parent-preview {
+.pot-parent {
   background: rgba(255,255,255,.07);
   padding: .15rem .45rem;
   border-radius: 6px;
   font-size: .75rem;
 }
 
-.pot-parent-preview {
-  color: #d8f8c8;
-  max-width: 100%;
-}
-
 .pot-cross { opacity: .5; font-size: .85rem; }
 
-.pot-placement-helper {
-  font-size: .76rem;
-  line-height: 1.35;
-  color: #8aaa8c;
-  background: rgba(126,200,80,.06);
-  border: 1px solid rgba(126,200,80,.14);
-  border-radius: 10px;
-  padding: .45rem .55rem;
-}
-
-/* Visuel mini */
+/* ── Visuel mini ─────────────────────────────────────────────────── */
 .pot-visual-mini {
   display: flex;
   align-items: center;
@@ -139,28 +190,24 @@
   font-size: .85rem;
   transition: background .3s;
 }
-
 .pot-visual-mini.pot-glow {
   background: rgba(111,207,58,.12);
   animation: miniGlow 1.5s ease-in-out infinite;
 }
-
 @keyframes miniGlow {
   0%, 100% { background: rgba(111,207,58,.1); }
   50%       { background: rgba(111,207,58,.25); }
 }
+.pot-emoji-mini   { font-size: 1.3rem; }
+.pot-stage-label  { opacity: .7; font-size: .75rem; }
 
-.pot-emoji-mini { font-size: 1.3rem; }
-.pot-stage-label { opacity: .7; font-size: .75rem; }
-
-/* Barre de progression */
+/* ── Barre de progression ─────────────────────────────────────────── */
 .pot-progress-wrap {
   height: 5px;
   background: rgba(255,255,255,.1);
   border-radius: 3px;
   overflow: hidden;
 }
-
 .pot-progress-bar {
   height: 100%;
   background: linear-gradient(90deg, #4a9a1a, #6fcf3a);
@@ -168,32 +215,7 @@
   transition: width .8s ease;
 }
 
-/* Selects dans slot vide */
-.pot-select-label {
-  display: flex;
-  flex-direction: column;
-  gap: .25rem;
-  font-size: .78rem;
-  color: #aaa;
-}
-
-.pot-select-label select {
-  background: rgba(0,0,0,.3);
-  border: 1px solid rgba(255,255,255,.15);
-  color: #eee;
-  border-radius: 6px;
-  padding: .3rem .5rem;
-  font-size: .82rem;
-  width: 100%;
-}
-
-.pot-select-label select:focus {
-  outline: none;
-  border-color: rgba(111,207,58,.72);
-  box-shadow: 0 0 0 3px rgba(111,207,58,.1);
-}
-
-/* Boutons */
+/* ── Boutons ──────────────────────────────────────────────────────── */
 .pot-start-btn,
 .pot-harvest-btn {
   width: 100%;
@@ -216,17 +238,13 @@
   color: #fff;
   animation: harvestPulse 1.2s ease-in-out infinite;
 }
-
 @keyframes harvestPulse {
   0%, 100% { box-shadow: 0 0 6px rgba(176,64,240,.3); }
   50%       { box-shadow: 0 0 18px rgba(176,64,240,.7); }
 }
 
 .pot-start-btn:hover,
-.pot-harvest-btn:hover {
-  transform: scale(1.03);
-}
-
+.pot-harvest-btn:hover { transform: scale(1.03); }
 .pot-start-btn:disabled { opacity: .5; cursor: not-allowed; }
 
 .pot-growing-hint {
@@ -238,12 +256,12 @@
 
 .pot-status-msg {
   font-size: .78rem;
-  color: #f0c040;
+  color: #a8e06a;
   min-height: 1rem;
   text-align: center;
 }
 
-/* Slot verrouillé */
+/* ── Slot verrouillé ──────────────────────────────────────────────── */
 .multi-pot-card.pot-locked {
   opacity: .45;
   border-style: dashed;
@@ -251,7 +269,6 @@
   background: rgba(0,0,0,.15);
   cursor: default;
 }
-
 .pot-locked-body {
   display: flex;
   flex-direction: column;
@@ -260,11 +277,10 @@
   gap: .5rem;
   padding: 1rem 0;
 }
-
-.pot-locked-icon { font-size: 2rem; filter: grayscale(1); }
+.pot-locked-icon  { font-size: 2rem; filter: grayscale(1); }
 .pot-locked-label { font-size: .78rem; color: #888; text-align: center; }
 
-/* Badge slots dans le header */
+/* ── Badge slots ──────────────────────────────────────────────────── */
 #pot-slots-badge {
   font-size: .8rem;
   background: rgba(111,207,58,.12);
