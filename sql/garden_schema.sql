@@ -31,17 +31,22 @@ CREATE POLICY "owner" ON npc_sales_log USING (auth.uid() = user_id);
 -- Ajouter quality_tier_id sur mutation_pots si absent
 ALTER TABLE mutation_pots ADD COLUMN IF NOT EXISTS quality_tier_id SMALLINT DEFAULT NULL;
 
--- Ajouter coins sur botanica_player_data si absent
+-- Ajouter champs progression/identite sur botanica_player_data si absents
 ALTER TABLE botanica_player_data ADD COLUMN IF NOT EXISTS coins INT NOT NULL DEFAULT 0;
+ALTER TABLE botanica_player_data ADD COLUMN IF NOT EXISTS display_name TEXT;
+ALTER TABLE botanica_player_data ADD COLUMN IF NOT EXISTS avatar_url TEXT;
 
--- Vue leaderboard (si pas encore créée)
+-- Vue leaderboard (si pas encore creee)
 CREATE OR REPLACE VIEW botanica_leaderboard AS
 SELECT
-  ROW_NUMBER() OVER (ORDER BY xp DESC) AS rank,
-  display_name,
-  avatar_url,
-  codex_count,
-  level,
-  xp
-FROM botanica_player_data
-WHERE display_name IS NOT NULL;
+  ROW_NUMBER() OVER (ORDER BY COALESCE(data.xp, 0) DESC) AS rank,
+  data.display_name,
+  data.avatar_url,
+  COUNT(codex.species_id)::INT AS codex_count,
+  data.level,
+  data.xp
+FROM botanica_player_data data
+LEFT JOIN botanica_player_codex codex
+  ON codex.user_id = data.user_id
+WHERE data.display_name IS NOT NULL
+GROUP BY data.user_id, data.display_name, data.avatar_url, data.level, data.xp;

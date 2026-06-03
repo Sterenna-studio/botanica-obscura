@@ -61,6 +61,7 @@ Objectif : **un joueur se connecte, comprend, plante, récolte, progresse, revie
 
 ### À vérifier / finaliser côté backend Supabase
 - [ ] Exécuter `sql/fix_v0.2_schema_drift.sql`
+- [ ] Exécuter `sql/fix_v0.3_profile_schema_drift.sql`
 - [ ] Exécuter `sql/add_onboarding_completed_flag.sql`
 - [ ] Exécuter `sql/seed_v0.3_tier2_species.sql`
 - [ ] Vérifier que l'Edge Function `harvest-mutation` respecte les couples `parent_a_id` / `parent_b_id` pour le Set 1

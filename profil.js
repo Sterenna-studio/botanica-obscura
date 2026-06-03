@@ -20,7 +20,7 @@ function timeAgo(iso) {
 }
 
 async function loadProfile(userId) {
-  const [playerRes, profileData, codexRes, salesRes, mutRes, firstRes] = await Promise.all([
+  const [playerRes, profileData, codexRes, salesRes, mutRes] = await Promise.all([
     supabase.from('botanica_player_data')
       .select('coins, xp, level, created_at')
       .eq('user_id', userId).maybeSingle(),
@@ -28,7 +28,7 @@ async function loadProfile(userId) {
     getSharedProfile(userId),
 
     supabase.from('botanica_player_codex')
-      .select('species_id, was_first_server, discovered_at, unlocked_at')
+      .select('species_id, was_first_server, unlocked_at')
       .eq('user_id', userId),
 
     supabase.from('botanica_npc_sales_log')
@@ -40,11 +40,6 @@ async function loadProfile(userId) {
     supabase.from('botanica_mutation_pots')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', userId),
-
-    supabase.from('botanica_player_codex')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .eq('was_first_server', true),
   ]);
 
   const player     = playerRes.data ?? {};
@@ -52,7 +47,7 @@ async function loadProfile(userId) {
   const codex      = codexRes.data ?? [];
   const sales      = salesRes.data ?? [];
   const mutCount   = mutRes.count ?? 0;
-  const firstCount = firstRes.count ?? 0;
+  const firstCount = codex.filter(row => row.was_first_server).length;
 
   const { data: speciesData } = await supabase
     .from('botanica_species').select('*')
@@ -108,7 +103,7 @@ function renderDiscoveries(codexRows, speciesList) {
 
   const speciesMap = Object.fromEntries(speciesList.map(s => [s.id, s]));
   const rows = [...codexRows]
-    .sort((a, b) => new Date(b.discovered_at ?? b.unlocked_at ?? 0) - new Date(a.discovered_at ?? a.unlocked_at ?? 0))
+    .sort((a, b) => new Date(b.unlocked_at ?? 0) - new Date(a.unlocked_at ?? 0))
     .slice(0, 12);
 
   if (!rows.length) {
@@ -118,7 +113,7 @@ function renderDiscoveries(codexRows, speciesList) {
 
   container.innerHTML = rows.map(row => {
     const sp = speciesMap[row.species_id];
-    const date = row.discovered_at ?? row.unlocked_at;
+    const date = row.unlocked_at;
     return `
       <article class="profil-discovery-card rarity-${sp?.rarity ?? 'common'}">
         <div class="profil-discovery-svg">${sp ? createPlantCharacterSvg(sp) : '<span>?</span>'}</div>

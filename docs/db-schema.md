@@ -21,7 +21,6 @@ Données de progression principale, une ligne par joueur.
 | `last_seed_claimed_at` | TIMESTAMPTZ | Cooldown colis mystère (12h) |
 | `display_name` | TEXT | Copié depuis le profil Nitro |
 | `avatar_url` | TEXT | Copié depuis le profil Nitro |
-| `codex_count` | INT | Nombre d'espèces découvertes |
 
 ### `botanica_player_seeds`
 Inventaire de graines du joueur.
@@ -44,7 +43,7 @@ Espèces découvertes par le joueur.
 | `user_id` | UUID | FK → `auth.users` |
 | `species_id` | INT | FK → `botanica_species` |
 | `was_first_server` | BOOL | True si première découverte mondiale |
-| `discovered_at` | TIMESTAMPTZ | |
+| `unlocked_at` | TIMESTAMPTZ | Date de déblocage dans le codex joueur |
 
 Clé primaire composée : `(user_id, species_id)`
 
@@ -133,14 +132,17 @@ Testeurs du joueur (créés à la première connexion).
 ### `botanica_leaderboard`
 ```sql
 SELECT
-  ROW_NUMBER() OVER (ORDER BY xp DESC) AS rank,
-  display_name,
-  avatar_url,
-  codex_count,
-  level,
-  xp
-FROM botanica_player_data
-WHERE display_name IS NOT NULL;
+  ROW_NUMBER() OVER (ORDER BY COALESCE(data.xp, 0) DESC) AS rank,
+  data.display_name,
+  data.avatar_url,
+  COUNT(codex.species_id)::INT AS codex_count,
+  data.level,
+  data.xp
+FROM botanica_player_data data
+LEFT JOIN botanica_player_codex codex
+  ON codex.user_id = data.user_id
+WHERE data.display_name IS NOT NULL
+GROUP BY data.user_id, data.display_name, data.avatar_url, data.level, data.xp;
 ```
 
 ---
@@ -172,3 +174,17 @@ Corrige deux divergences DB ↔ code détectées en prod V0.2 :
 
 Le script est idempotent (`IF NOT EXISTS`, `DROP POLICY IF EXISTS`) — réexécutable
 sans risque.
+
+### `sql/fix_v0.3_profile_schema_drift.sql` *(à exécuter sur la prod)*
+
+Corrige la dérive DB ↔ code détectée sur la page profil V0.3 :
+
+1. **`botanica_player_data.display_name` et `avatar_url` manquants** — le bridge
+   auth synchronise ces champs depuis le profil Nitro à chaque session. Sans ces
+   colonnes, l'upsert PostgREST renvoie 400.
+2. **`botanica_leaderboard.codex_count` stocké côté player data** — la vue est
+   recréée pour calculer le compteur depuis `botanica_player_codex`, ce qui évite
+   une colonne dérivée non maintenue par le front.
+
+Le script est idempotent (`ADD COLUMN IF NOT EXISTS`) et recharge le cache
+PostgREST via `NOTIFY pgrst, 'reload schema'`.
