@@ -1,6 +1,6 @@
 # Botanica Obscura
 
-[![Deploy Botanica Obscura to Nitro](https://github.com/MutenRock/botanica-obscura/actions/workflows/deploy-ovh.yml/badge.svg)](https://github.com/MutenRock/botanica-obscura/actions/workflows/deploy-ovh.yml)
+[![Deploy Botanica Obscura to Nitro](https://github.com/sterenna-studio/botanica-obscura/actions/workflows/deploy-ovh.yml/badge.svg)](https://github.com/sterenna-studio/botanica-obscura/actions/workflows/deploy-ovh.yml)
 
 Idle gacha botanique connecté à Nitro (https://nitro.sterenna.fr).
 Les joueurs combinent des graines dans des pots de mutation, récoltent des plantes, complètent un codex partagé et progressent via XP + coins.
