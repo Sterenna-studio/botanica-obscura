@@ -141,9 +141,11 @@ SELECT
 FROM botanica_player_data data
 LEFT JOIN botanica_player_codex codex
   ON codex.user_id = data.user_id
-WHERE data.display_name IS NOT NULL
 GROUP BY data.user_id, data.display_name, data.avatar_url, data.level, data.xp;
 ```
+
+> Le Hall of Fame inclut **tous les joueurs** (plus de filtre `display_name IS
+> NOT NULL`). Le front affiche « Botaniste anonyme » pour les pseudos manquants.
 
 ---
 
@@ -188,3 +190,10 @@ Corrige la dérive DB ↔ code détectée sur la page profil V0.3 :
 
 Le script est idempotent (`ADD COLUMN IF NOT EXISTS`) et recharge le cache
 PostgREST via `NOTIFY pgrst, 'reload schema'`.
+
+### `sql/fix_leaderboard_all_players.sql` *(à exécuter sur la prod)*
+
+Recrée la vue `botanica_leaderboard` **sans** le filtre `display_name IS NOT
+NULL` afin d'inclure tous les joueurs dans le Hall of Fame. Le front
+(`leaderboard.js`) n'a plus de `.limit(50)` et affiche « Botaniste anonyme »
+pour les pseudos vides. Idempotent (`CREATE OR REPLACE VIEW`).

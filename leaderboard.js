@@ -19,8 +19,7 @@ async function loadLeaderboard() {
   const { data, error } = await supabase
     .from('botanica_leaderboard')
     .select('rank, display_name, avatar_url, codex_count, level, xp')
-    .order(orderCol, { ascending: false })
-    .limit(50);
+    .order(orderCol, { ascending: false });
 
   if (error) {
     tbody.innerHTML = '';

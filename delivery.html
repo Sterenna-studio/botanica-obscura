@@ -6,6 +6,7 @@
   <title>Livraisons — Botanica Obscura</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%8C%BF%3C%2Ftext%3E%3C%2Fsvg%3E" />
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles/deliveryGame.css">
   <style>
     /* ── Layout ── */
     body { background: var(--bg); color: var(--text); font-family: var(--font-body, sans-serif); min-height: 100dvh; }
@@ -35,6 +36,11 @@
     .order-npc-name { font-weight: 600; font-size: 0.9rem; }
     .order-species { font-size: 0.85rem; color: var(--text-muted, #aaa); }
     .order-species strong { color: var(--text, #fff); }
+
+    .order-destination { font-size: 0.82rem; color: #cfd8dc; }
+    .order-destination .order-km { color: var(--text-muted, #aaa); font-size: 0.72rem; }
+    .order-difficulty { font-size: 0.78rem; color: var(--text-muted, #aaa); }
+    .order-difficulty .order-stars { color: #f0c040; letter-spacing: 1px; }
 
     .order-reward { font-size: 0.95rem; font-weight: 700; color: #f0c040; }
     .order-xp     { font-size: 0.78rem; color: #80cbc4; }
@@ -103,8 +109,8 @@
 <div id="topbar-mount"></div>
 
 <main class="delivery-page">
-  <h1>🚚 Livraisons</h1>
-  <p class="subtitle">Des collectionneurs attendent vos plantes. Livrez avant l'expiration pour gagner un bonus !</p>
+  <h1>🚚 Livraisons dans Pontivy</h1>
+  <p class="subtitle">Des collectionneurs des quatre coins de Pontivy attendent vos plantes. Prenez le volant, évitez la gendarmerie et livrez avant l'expiration pour empocher le bonus !</p>
 
   <div class="refresh-bar">
     <button class="btn-refresh" id="btnRefresh">🔄 Nouvelles commandes</button>
@@ -120,6 +126,7 @@
 
 <script type="module">
   import { generateOrders, fulfillOrder } from './lib/delivery.js';
+  import { launchDeliveryGame } from './lib/deliveryGame.js';
   import { supabase } from './lib/supabaseClient.js';
 
   // ── Auth ──
@@ -172,14 +179,17 @@
     const card = document.createElement('div');
     card.className = 'order-card';
     card.id = `card-${order.id}`;
+    const stars = '★'.repeat(order.difficulty ?? 1) + '☆'.repeat(3 - (order.difficulty ?? 1));
     card.innerHTML = `
       <div class="order-npc">${order.npcEmoji}</div>
       <div class="order-npc-name">${order.npcName}</div>
       <div class="order-species">veut : <strong class="rarity-${order.rarity}">${order.speciesName}</strong></div>
+      <div class="order-destination">📍 ${order.destinationEmoji ?? ''} ${order.destination ?? 'Pontivy'} <span class="order-km">${order.destinationKm ?? ''} km</span></div>
+      <div class="order-difficulty" title="Difficulté du trajet">🚦 <span class="order-stars">${stars}</span></div>
       <div class="order-reward">🪙 +${order.reward}</div>
       <div class="order-xp">+XP livraison inclus</div>
       <div class="order-timer" id="timer-${order.id}"></div>
-      <button class="btn-deliver" id="btn-${order.id}">📦 Livrer</button>
+      <button class="btn-deliver" id="btn-${order.id}">🚗 Livrer dans Pontivy</button>
     `;
     card.querySelector(`#btn-${order.id}`).addEventListener('click', () => deliver(order));
     return card;
@@ -214,31 +224,42 @@
     }, 1000);
   }
 
-  // ── Livraison ──
-  async function deliver(order) {
+  // ── Livraison : lance le mini-jeu de conduite dans Pontivy ──
+  function deliver(order) {
     const btn  = document.getElementById(`btn-${order.id}`);
     const card = document.getElementById(`card-${order.id}`);
     if (!btn || !card) return;
+    if (Date.now() > order.expiresAt) { toast('⏱ Commande expirée.'); return; }
     btn.disabled = true;
-    btn.textContent = '⏳ Envoi…';
+    btn.textContent = '🚗 En route…';
 
-    const result = await fulfillOrder(userId, order);
-
-    if (result.error) {
-      btn.disabled = false;
-      btn.textContent = '📦 Livrer';
-      toast(`❌ ${result.error}`);
-      return;
-    }
-
-    card.classList.add('fulfilled');
-    btn.textContent = '✅ Livré !';
-
-    let msg = `🚚 Livré ! +${order.reward}🪙  +${result.xpGained}XP`;
-    if (result.leveledUp) msg += ` 🎉 Niveau ${result.newLevel} !`;
-    toast(msg);
-
-    orders = orders.filter(o => o.id !== order.id);
+    launchDeliveryGame({
+      cargo:            1,
+      destinationName:  order.destination,
+      destinationEmoji: order.destinationEmoji,
+      rewardCoins:      order.reward,
+      difficulty:       order.difficulty ?? 1,
+      onComplete: async () => {
+        const result = await fulfillOrder(userId, order);
+        if (result.error) {
+          btn.disabled = false;
+          btn.textContent = '🚗 Livrer dans Pontivy';
+          toast(`❌ ${result.error}`);
+          return;
+        }
+        card.classList.add('fulfilled');
+        btn.textContent = '✅ Livré !';
+        let msg = `🚚 Livré à ${order.destination} ! +${order.reward}🪙  +${result.xpGained}XP`;
+        if (result.leveledUp) msg += ` 🎉 Niveau ${result.newLevel} !`;
+        toast(msg);
+        orders = orders.filter(o => o.id !== order.id);
+      },
+      onFail: () => {
+        btn.disabled = false;
+        btn.textContent = '🚗 Réessayer';
+        toast('🚨 Contrôle de gendarmerie ! Commande non livrée.');
+      },
+    });
   }
 
   // ── Toast ──

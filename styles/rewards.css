@@ -1,0 +1,198 @@
+/* styles/rewards.css — Bonus quotidien, quêtes, statistiques, infos pousse */
+
+/* ── Bonus quotidien ──────────────────────────────────────────────────────── */
+.daily-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem 1.2rem;
+  border-radius: 12px;
+  border: 1px solid rgba(244, 160, 48, 0.35);
+  background: rgba(244, 160, 48, 0.06);
+}
+.daily-card.daily-claimed {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  opacity: 0.75;
+}
+.daily-streak { font-size: 1rem; }
+.daily-reward { font-size: 0.9rem; opacity: 0.85; }
+.daily-claim-btn {
+  align-self: flex-start;
+  margin-top: 0.3rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(244, 160, 48, 0.6);
+  background: rgba(244, 160, 48, 0.18);
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+.daily-claim-btn:hover:not([disabled]) { background: rgba(244, 160, 48, 0.32); }
+.daily-claim-btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+
+/* ── Quêtes ───────────────────────────────────────────────────────────────── */
+.quests-grid { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.5rem; }
+.quest-card {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+}
+.quest-card.quest-ready {
+  border-color: rgba(126, 200, 80, 0.5);
+  background: rgba(126, 200, 80, 0.08);
+}
+.quest-card.quest-claimed { opacity: 0.55; }
+.quest-emoji { font-size: 1.6rem; }
+.quest-body { flex: 1; display: flex; flex-direction: column; gap: 0.35rem; }
+.quest-label { font-size: 0.9rem; font-weight: 600; }
+.quest-bar {
+  height: 7px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+.quest-bar > span {
+  display: block;
+  height: 100%;
+  background: #7ec850;
+  border-radius: 4px;
+  transition: width 0.3s;
+}
+.quest-action { min-width: 90px; text-align: right; }
+.quest-progress-num { font-size: 0.85rem; opacity: 0.7; }
+.quest-done { font-size: 0.85rem; color: #7ec850; font-weight: 600; }
+.quest-claim-btn {
+  padding: 0.4rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid rgba(126, 200, 80, 0.6);
+  background: rgba(126, 200, 80, 0.18);
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+.quest-claim-btn:hover { background: rgba(126, 200, 80, 0.32); }
+
+/* ── Statistiques ─────────────────────────────────────────────────────────── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.7rem;
+  margin-top: 0.5rem;
+}
+.stat-card {
+  padding: 0.8rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  text-align: center;
+}
+.stat-num { font-size: 1.3rem; font-weight: 700; }
+.stat-lbl { font-size: 0.75rem; opacity: 0.6; margin-top: 0.2rem; }
+.stats-best { margin-top: 0.9rem; font-size: 0.95rem; }
+.stats-quality-breakdown { margin-top: 0.9rem; }
+.stats-subtitle, .pot-info-subtitle {
+  font-size: 0.85rem;
+  font-weight: 600;
+  opacity: 0.8;
+  margin-bottom: 0.4rem;
+}
+.stat-quality-row {
+  display: grid;
+  grid-template-columns: 90px 1fr 32px;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+  font-size: 0.8rem;
+}
+.stat-quality-bar {
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.stat-quality-bar > span { display: block; height: 100%; border-radius: 4px; }
+.stat-quality-count { text-align: right; opacity: 0.8; }
+
+/* ── Agrandir le laboratoire ──────────────────────────────────────────────── */
+.lab-expansion-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.2rem;
+  border-radius: 12px;
+  border: 1px solid rgba(91, 200, 239, 0.35);
+  background: rgba(91, 200, 239, 0.06);
+}
+.lab-expansion-card.lab-maxed {
+  border-color: rgba(216, 112, 240, 0.4);
+  background: rgba(216, 112, 240, 0.06);
+}
+.lab-expansion-emoji { font-size: 2rem; }
+.lab-expansion-info { flex: 1; }
+.lab-expansion-title { font-weight: 700; font-size: 0.98rem; }
+.lab-expansion-desc { font-size: 0.82rem; opacity: 0.7; margin-top: 0.2rem; }
+.lab-expansion-btn {
+  padding: 0.55rem 1.1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(91, 200, 239, 0.6);
+  background: rgba(91, 200, 239, 0.18);
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 700;
+  transition: background 0.2s;
+}
+.lab-expansion-btn:hover:not(.disabled) { background: rgba(91, 200, 239, 0.32); }
+.lab-expansion-btn.disabled { opacity: 0.45; cursor: not-allowed; }
+.lab-expansion-max { font-weight: 700; color: #d870f0; letter-spacing: 0.1em; }
+.pot-locked-hint { font-size: 0.72rem; color: #5bc8ef; }
+
+/* ── Panneau d'infos pousse (dans les pots) ───────────────────────────────── */
+.pot-info {
+  margin-top: 0.6rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 0.5rem;
+}
+.pot-info > summary {
+  cursor: pointer;
+  font-size: 0.82rem;
+  opacity: 0.75;
+  list-style: none;
+}
+.pot-info > summary::-webkit-details-marker { display: none; }
+.pot-info > summary:hover { opacity: 1; }
+.pot-info-body { margin-top: 0.5rem; font-size: 0.78rem; }
+.pot-info-parents { list-style: none; padding: 0; margin: 0 0 0.6rem; }
+.pot-info-parents li { margin-bottom: 0.2rem; }
+.pot-odds-list { display: flex; flex-direction: column; gap: 0.25rem; }
+.pot-odds-row {
+  display: grid;
+  grid-template-columns: 78px 1fr 34px auto;
+  align-items: center;
+  gap: 0.4rem;
+}
+.pot-odds-name { font-size: 0.72rem; }
+.pot-odds-bar {
+  height: 7px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.pot-odds-bar > span { display: block; height: 100%; border-radius: 4px; }
+.pot-odds-pct { font-size: 0.72rem; text-align: right; opacity: 0.85; }
+.pot-odds-extra { font-size: 0.68rem; opacity: 0.6; white-space: nowrap; }
+.pot-info-note {
+  margin-top: 0.6rem;
+  font-size: 0.72rem;
+  opacity: 0.6;
+  line-height: 1.5;
+}

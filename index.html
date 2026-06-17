@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="styles/seedShop.css" />
     <link rel="stylesheet" href="styles/sellModal.css" />
     <link rel="stylesheet" href="styles/seedPicker.css" />
+    <link rel="stylesheet" href="styles/rewards.css" />
   </head>
   <body>
 
@@ -116,13 +117,6 @@
         <div id="inventoryEmpty" class="muted" style="display:none">Aucune graine — achetez-en dans la Boutique !</div>
         <div id="inventoryGrid" class="inventory-grid"></div>
       </section>
-      <details class="panel collapsible-zone" id="garden-section" style="display:none">
-        <summary class="zone-summary">🌡️ Jardin &amp; Améliorations</summary>
-        <div class="zone-content">
-          <p class="muted">Améliorez votre jardin pour augmenter la qualité et la quantité de vos récoltes.</p>
-          <div id="gardenContainer" class="garden-grid"></div>
-        </div>
-      </details>
       <details class="panel collapsible-zone" id="testers-section" style="display:none">
         <summary class="zone-summary">🧑‍🌾 Testeurs</summary>
         <div class="zone-content">
@@ -146,6 +140,16 @@
     <!-- ONGLET BOUTIQUE -->
     <div class="tab-panel" data-tab="shop" role="tabpanel">
       <section class="panel">
+        <h2>🎁 Bonus quotidien</h2>
+        <p class="muted">Reviens chaque jour pour entretenir ta série et gagner XP + pièces.</p>
+        <div id="dailyContainer"></div>
+      </section>
+      <section class="panel">
+        <h2>🎯 Quêtes du jour</h2>
+        <p class="muted">Termine ces objectifs avant minuit pour des récompenses bonus.</p>
+        <div id="questsContainer" class="quests-grid"></div>
+      </section>
+      <section class="panel">
         <div id="mystery-seed-zone">
           <h2>📦 Colis mystère</h2>
           <p class="muted">Une graine aléatoire Tier 0 toutes les 12h — gratuite !</p>
@@ -156,14 +160,33 @@
       </section>
       <section class="panel">
         <h2>🏪 Graines de base</h2>
-        <p class="muted">Achetez des graines pour remplir vos pots. Les prix varient selon la rareté.</p>
+        <p class="muted">Achetez des graines pour remplir vos pots. Montez en niveau pour débloquer les raretés supérieures.</p>
         <div id="shopEmpty" class="muted" style="display:none">Boutique indisponible.</div>
         <div id="shopGrid"></div>
       </section>
+      <section class="panel" id="lab-expansion-section">
+        <h2>🧪 Agrandir le laboratoire</h2>
+        <p class="muted">Achetez des pots de mutation supplémentaires pour cultiver plus en parallèle.</p>
+        <div id="labExpansionContainer"></div>
+      </section>
+      <details class="panel collapsible-zone" id="garden-section" style="display:none">
+        <summary class="zone-summary">🌡️ Jardin &amp; Améliorations</summary>
+        <div class="zone-content">
+          <p class="muted">Améliorez votre jardin pour augmenter la qualité et la quantité de vos récoltes.</p>
+          <div id="gardenContainer" class="garden-grid"></div>
+        </div>
+      </details>
     </div>
 
     <!-- ONGLET CODEX -->
     <div class="tab-panel" data-tab="codex" role="tabpanel">
+      <details class="panel collapsible-zone" open>
+        <summary class="zone-summary">📊 Statistiques</summary>
+        <div class="zone-content">
+          <p class="muted">Ton activité de botaniste depuis le début de l'aventure.</p>
+          <div id="statsContainer"></div>
+        </div>
+      </details>
       <details class="panel collapsible-zone">
         <summary class="zone-summary">🗺️ Arbre des mutations</summary>
         <div class="zone-content">

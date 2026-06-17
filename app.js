@@ -16,6 +16,7 @@ import { performSeedDrop } from './lib/seedDrop.js';
 import { loadFlowers, addFlowers, renderFlowers, totalFlowerCount } from './lib/flowerInventory.js';
 import { openSellModal } from './lib/sellModal.js';
 import { loadBaseSpecies, renderSeedShop } from './lib/seedShop.js';
+import { buyPotSlot, renderLabExpansion } from './lib/labExpansion.js';
 import { initTabs } from './lib/tabs.js';
 import {
   initPots,
@@ -30,6 +31,10 @@ import { adjustLocalSeedQuantity, loadLocal, patchLocal } from './lib/localSave.
 import { showIntroIfNeeded } from './lib/intro.js';
 import { showDiscoveryNotice } from './lib/discoveryNotice.js';
 import { renderSpeciesPanel } from './lib/speciesPanel.js';
+import { recordHarvest, recordSale, renderStats } from './lib/stats.js';
+import {
+  renderDaily, renderQuests, claimDaily, claimQuest, recordQuestEvent,
+} from './lib/quests.js';
 
 export { supabase };
 export function getUserId() { return getBotanicaUserId(); }
@@ -107,7 +112,11 @@ function showHarvestReveal(species, qualityTier, xpGained, flowerQty, seedDrops,
     if (seedDrops?.length) {
       const labels = seedDrops.map(d => {
         const sp = speciesList.find(s => Number(s.id) === Number(d.speciesId));
-        return `🌱 +${d.qty} graine${d.qty > 1 ? 's' : ''} de ${sp?.name ?? `espèce #${d.speciesId}`}`;
+        const name = sp?.name ?? `espèce #${d.speciesId}`;
+        const plural = d.qty > 1 ? 's' : '';
+        return d.isVariety
+          ? `🧬 +${d.qty} graine${plural} de ta variété ${name} !`
+          : `🌱 +${d.qty} graine${plural} de ${name}`;
       });
       seedDropEl.innerHTML = labels.join('<br>');
       seedDropEl.style.display = '';
@@ -288,14 +297,28 @@ function renderSellBtn() {
 
 async function refreshShop() {
   if (!baseSpecies.length) baseSpecies = await loadBaseSpecies();
+  const level = currentPlayerData.level ?? 1;
   const onBuy = async (newCoins) => {
     currentPlayerData.coins = newCoins;
     renderPlayerStats(currentPlayerData);
     renderGarden(currentGarden, newCoins, onBuyGardenEffect);
-    renderSeedShop(baseSpecies, currentPlayerData.coins, getUserId(), onBuy);
+    renderSeedShop(baseSpecies, currentPlayerData.coins, getUserId(), onBuy, currentPlayerData.level ?? 1);
     await refreshInventory();
   };
-  renderSeedShop(baseSpecies, currentPlayerData.coins, getUserId(), onBuy);
+  renderSeedShop(baseSpecies, currentPlayerData.coins, getUserId(), onBuy, level);
+  renderLabExpansion(currentPlayerData, onBuyPotSlot);
+}
+
+async function onBuyPotSlot() {
+  const result = await buyPotSlot(getUserId(), currentPlayerData.pot_slots ?? 1, currentPlayerData.coins);
+  if (result.error) { showToast(result.error); return; }
+  currentPlayerData.coins     = result.newCoins;
+  currentPlayerData.pot_slots = result.newPotSlots;
+  renderPlayerStats(currentPlayerData);
+  updatePotsPlayerData(currentPlayerData);
+  renderGarden(currentGarden, currentPlayerData.coins, onBuyGardenEffect);
+  refreshShop();
+  showToast(`🧪 Nouveau pot débloqué ! (${result.newPotSlots} pots)`, 'success');
 }
 
 async function refreshInventory() {
@@ -341,6 +364,45 @@ async function refreshGarden() {
   currentGarden = await loadGarden(getUserId());
   updatePotsGarden(currentGarden);
   renderGarden(currentGarden, currentPlayerData.coins, onBuyGardenEffect);
+}
+
+// ── Bonus quotidien + quêtes + statistiques ─────────────────────────────────
+function refreshRewardsUI() {
+  renderDaily(currentPlayerData, onClaimDaily);
+  renderQuests(currentPlayerData, onClaimQuest);
+  renderStats();
+}
+
+function applyRewardResult(result) {
+  currentPlayerData = {
+    ...currentPlayerData,
+    xp:        result.newXp,
+    level:     result.newLevel,
+    coins:     result.newCoins,
+    pot_slots: result.newPotSlots ?? currentPlayerData.pot_slots,
+  };
+  renderPlayerStats(currentPlayerData);
+  applyLevelGating(currentPlayerData.level ?? 1);
+  updatePotsPlayerData(currentPlayerData);
+  renderGarden(currentGarden, currentPlayerData.coins, onBuyGardenEffect);
+  refreshShop();
+  if (result.leveledUp) showLevelUpOverlay(result.newLevel, result.reward);
+}
+
+async function onClaimDaily() {
+  const result = await claimDaily(getUserId(), currentPlayerData);
+  if (result.error) { showToast(result.error); return; }
+  applyRewardResult(result);
+  showToast(`🎁 Bonus quotidien : +${result.reward.coins} 🪙 · +${result.reward.xp} XP`, 'success');
+  refreshRewardsUI();
+}
+
+async function onClaimQuest(questId) {
+  const result = await claimQuest(questId, getUserId(), currentPlayerData);
+  if (result.error) { showToast(result.error); return; }
+  applyRewardResult(result);
+  showToast(`✅ Quête réussie : +${result.reward.coins} 🪙 · +${result.reward.xp} XP`, 'success');
+  refreshRewardsUI();
 }
 
 function showToast(msg, type = 'error') {
@@ -393,8 +455,24 @@ async function onHarvest(harvestResult, xpResult) {
   const { drops: seedDrops } = await performSeedDrop(
     getUserId(),
     harvestResult.species_a_id,
-    harvestResult.species_b_id
+    harvestResult.species_b_id,
+    {
+      resultSpeciesId: lastHarvestedSp?.id ?? null,
+      qualityTierId:   harvestResult.quality_tier_id ?? 1,
+      gardenBonuses:   currentGarden,
+    }
   );
+
+  // Statistiques + quêtes
+  const seedTotal    = seedDrops.reduce((n, d) => n + (d.qty ?? 0), 0);
+  const varietyTotal = seedDrops.filter(d => d.isVariety).reduce((n, d) => n + (d.qty ?? 0), 0);
+  recordHarvest({
+    qualityTierId:    harvestResult.quality_tier_id ?? 1,
+    flowerQty,
+    seedCount:        seedTotal,
+    varietySeedCount: varietyTotal,
+  });
+  recordQuestEvent('harvest', 1);
 
   currentPlayerData = { ...currentPlayerData, xp: xpResult.newXp, level: xpResult.newLevel, coins: xpResult.newCoins, pot_slots: xpResult.newPotSlots ?? currentPlayerData.pot_slots };
   renderPlayerStats(currentPlayerData);
@@ -415,6 +493,7 @@ async function onHarvest(harvestResult, xpResult) {
   await Promise.all([loadSpecies(), refreshInventory(), refreshFlowers(), refreshTesters()]);
   refreshShop();
   renderGarden(currentGarden, currentPlayerData.coins, onBuyGardenEffect);
+  refreshRewardsUI();
 }
 
 async function init() {
@@ -438,18 +517,26 @@ async function init() {
     await initOnboarding(getUserId(), async () => { await refreshInventory(); });
     await initPots(speciesList, currentPlayerData, onHarvest, currentGarden, refreshInventory);
     initMysterySeed(async () => { await refreshInventory(); }, () => currentPlayerData.level ?? 1);
+    refreshRewardsUI();
 
     // ── Bouton Vendre → ouvre la modal inline ──────────────────────────────
     const sellBtn = document.getElementById('sell-all-btn');
     if (sellBtn) {
       sellBtn.addEventListener('click', () => {
         if (!currentFlowers.length) { showToast('Aucune fleur à vendre !', 'error'); return; }
+        const soldCount = currentFlowers.reduce((n, f) => n + (f.quantity ?? 1), 0);
         openSellModal(currentFlowers, getUserId(), async (newCoins, earned, lost) => {
           if (newCoins !== null) {
             currentPlayerData.coins = newCoins;
             renderPlayerStats(currentPlayerData);
             renderGarden(currentGarden, currentPlayerData.coins, onBuyGardenEffect);
             refreshShop();
+          }
+          // Comptabilise la vente (sauf cargo confisqué) pour stats + quêtes
+          if (!lost) {
+            recordSale({ count: soldCount, coins: earned ?? 0 });
+            recordQuestEvent('sell', soldCount);
+            refreshRewardsUI();
           }
           await refreshFlowers();
         });

@@ -56,6 +56,16 @@
 }
 .dg-close:hover { background: rgba(255,80,80,0.2); color: #ff8080; }
 
+.dg-route {
+  font-size: 0.85rem;
+  color: #c8e6c9;
+  font-family: monospace;
+  text-align: center;
+  padding: 4px 0;
+  border-bottom: 1px dashed #2d5a27;
+}
+.dg-route strong { color: #ffd54f; }
+
 .dg-hud {
   display: flex;
   gap: 16px;
